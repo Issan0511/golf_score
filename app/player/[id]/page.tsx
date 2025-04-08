@@ -1,19 +1,16 @@
-import type React from "react"
+"use client";
+
+import { useEffect, useState } from "react"
 import Image from "next/image"
-import Link from "next/link"
-import { notFound } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { supabase, type Player, type PlayerStats, type Round } from "@/lib/supabase"
 import { ArrowLeft, School, Calendar, MapPin, Trophy, Cloud, Flag, GuitarIcon as Golf } from "lucide-react"
-
-interface PlayerPageProps {
-  params: Promise<{
-    id: string
-  }>
-}
+import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
+import { LoadingModal } from "@/components/ui/loading-modal"
 
 async function getPlayer(id: string) {
   const { data, error } = await supabase.from("players").select("*").eq("id", id).single()
@@ -52,19 +49,62 @@ async function getPlayerRounds(id: string) {
   return data as Round[]
 }
 
-export default async function PlayerPage({ params }: PlayerPageProps) {
-  // paramsをawaitして実際の値を取得
-  const resolvedParams = await params;
-  const id = resolvedParams.id;
+export default function PlayerPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
+  
+  const [player, setPlayer] = useState<Player | null>(null);
+  const [stats, setStats] = useState<PlayerStats | null>(null);
+  const [rounds, setRounds] = useState<Round[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isNavigating, navigate } = useLoadingNavigation();
 
-  const player = await getPlayer(id);
+  // データの取得
+  useEffect(() => {
+    async function loadPlayerData() {
+      setLoading(true);
+      if (!id) {
+        router.push("/players");
+        return;
+      }
 
-  if (!player) {
-    notFound();
+      try {
+        const playerData = await getPlayer(id);
+        
+        if (!playerData) {
+          router.push("/players");
+          return;
+        }
+
+        setPlayer(playerData);
+        
+        // プレイヤーの統計情報とラウンド履歴を並行して取得
+        const [statsData, roundsData] = await Promise.all([
+          getPlayerStats(id),
+          getPlayerRounds(id)
+        ]);
+        
+        setStats(statsData);
+        setRounds(roundsData || []);
+      } catch (error) {
+        console.error("Error loading player data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPlayerData();
+  }, [id, router]);
+
+  // プレイヤーデータがまだロード中または取得できなかった場合
+  if (loading || !player) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <LoadingModal isLoading={true} message="プレイヤーデータを読み込み中..." />
+      </div>
+    );
   }
-
-  const stats = await getPlayerStats(id);
-  const rounds = await getPlayerRounds(id);
   
   // 現在の年度を計算
   const now = new Date()
@@ -111,13 +151,18 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <LoadingModal isLoading={isNavigating} message="移動中..." />
+      
       <div className="mb-6">
-        <Link href="/players">
-          <Button variant="ghost" size="sm" className="text-golf-600 hover:text-golf-700 hover:bg-golf-50">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            プレイヤー一覧に戻る
-          </Button>
-        </Link>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-golf-600 hover:text-golf-700 hover:bg-golf-50"
+          onClick={() => navigate("/players")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          プレイヤー一覧に戻る
+        </Button>
       </div>
 
       <div className="grid md:grid-cols-[300px_1fr] gap-8">

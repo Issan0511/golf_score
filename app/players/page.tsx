@@ -1,10 +1,14 @@
+"use client";
+
+import { useEffect, useState } from "react"
 import Image from "next/image"
-import Link from "next/link"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { supabase, type Player, type PlayerStats } from "@/lib/supabase"
 import { School, Calendar, MapPin, Trophy } from "lucide-react"
+import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
+import { LoadingModal } from "@/components/ui/loading-modal"
 
 async function getPlayers() {
   const { data, error } = await supabase.from("players").select("*").order("name")
@@ -28,17 +32,46 @@ async function getPlayerStats(playerId: string) {
   return data as PlayerStats
 }
 
-export default async function PlayersPage() {
-  const players = await getPlayers()
+export default function PlayersPage() {
+  const [players, setPlayers] = useState<Player[]>([])
+  const [playersWithStats, setPlayersWithStats] = useState<(Player & { stats?: PlayerStats })[]>([])
+  const [loading, setLoading] = useState(true)
+  const { isNavigating, navigate } = useLoadingNavigation()
+
+  // データの取得
+  useEffect(() => {
+    async function fetchPlayers() {
+      setLoading(true)
+      try {
+        const playersData = await getPlayers()
+        setPlayers(playersData)
+        
+        // 全プレイヤーの統計情報を並行で取得
+        const playersWithStatsData = await Promise.all(
+          playersData.map(async (player) => {
+            const stats = await getPlayerStats(player.id)
+            return { ...player, stats }
+          })
+        )
+        setPlayersWithStats(playersWithStatsData)
+      } catch (error) {
+        console.error("Error loading players:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlayers()
+  }, [])
   
-  // 現在の年度を計算（PlayerCardコンポーネントと同じロジック）
+  // 現在の年度を計算
   const now = new Date()
   const currentYear = now.getFullYear()
   // 4月1日より前なら前年度とする
   const currentFiscalYear = now.getMonth() < 3 ? currentYear - 1 : currentYear
   
   // 回生順にプレイヤーをソート
-  const sortedPlayers = [...players].sort((a, b) => {
+  const sortedPlayers = [...playersWithStats].sort((a, b) => {
     // admission_yearがない場合は最後に
     if (!a.admission_year) return 1;
     if (!b.admission_year) return -1;
@@ -66,6 +99,8 @@ export default async function PlayersPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <LoadingModal isLoading={loading || isNavigating} message={loading ? "プレイヤーデータを読み込み中..." : "詳細ページに移動中..."} />
+      
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold mb-2 text-golf-800">プレイヤー一覧</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
@@ -75,22 +110,30 @@ export default async function PlayersPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {sortedPlayers.map((player) => (
-          <PlayerCard key={player.id} player={player} />
+          <PlayerCard 
+            key={player.id} 
+            player={player} 
+            stats={player.stats} 
+            currentFiscalYear={currentFiscalYear}
+            onViewDetails={() => navigate(`/player/${player.id}`)}
+          />
         ))}
       </div>
     </div>
   )
 }
 
-async function PlayerCard({ player }: { player: Player }) {
-  const stats = await getPlayerStats(player.id)
-  
-  // 現在の年度を計算
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  // 4月1日より前なら前年度とする
-  const currentFiscalYear = now.getMonth() < 3 ? currentYear - 1 : currentYear
-  
+function PlayerCard({ 
+  player, 
+  stats, 
+  currentFiscalYear,
+  onViewDetails 
+}: { 
+  player: Player; 
+  stats?: PlayerStats;
+  currentFiscalYear: number;
+  onViewDetails: () => void;
+}) {
   // 回生（学年）を計算
   let grade = 0
   if (player.admission_year) {
@@ -180,14 +223,13 @@ async function PlayerCard({ player }: { player: Player }) {
         </div>
       </CardContent>
       <CardFooter className="bg-gray-50 p-4 border-t border-gray-100">
-        <Link href={`/player/${player.id}`} className="w-full">
-          <Button
-            variant="outline"
-            className="w-full border-golf-500 text-golf-600 hover:bg-golf-50 hover:text-golf-700 transition-colors duration-300"
-          >
-            詳細を見る
-          </Button>
-        </Link>
+        <Button
+          variant="outline"
+          className="w-full border-golf-500 text-golf-600 hover:bg-golf-50 hover:text-golf-700 transition-colors duration-300"
+          onClick={onViewDetails}
+        >
+          詳細を見る
+        </Button>
       </CardFooter>
     </Card>
   )
