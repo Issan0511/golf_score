@@ -1,13 +1,20 @@
-import type React from "react"
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { GolfIcon } from "@/components/golf-icon"
 import { Users, BarChart2, PlusCircle, Trophy, Calendar, Flag } from "lucide-react"
+import { LoadingModal } from "@/components/ui/loading-modal"
+import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
 
 export default function Home() {
+  const { isNavigating, navigate } = useLoadingNavigation();
+
   return (
     <div className="container mx-auto px-4 py-20">
+      <LoadingModal isLoading={isNavigating} message="画面を読み込み中..." />
+      
       <div className="flex flex-col items-center justify-center space-y-6 text-center mb-16 fade-in">
         <div className="bg-gradient-to-r from-golf-400 to-golf-600 p-4 rounded-full shadow-lg">
           <GolfIcon className="h-12 w-12 text-white" />
@@ -19,19 +26,19 @@ export default function Home() {
           部員のラウンドスコア・パフォーマンスを記録・可視化し、個人の成績管理と比較を容易にします。
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-4">
-          <Link href="/players">
-            <Button className="bg-golf-600 hover:bg-golf-700 text-white px-6 py-2 rounded-full shadow-md transition-all duration-300 hover:shadow-lg">
-              プレイヤー一覧を見る
-            </Button>
-          </Link>
-          <Link href="/submit-score">
-            <Button
-              variant="outline"
-              className="border-golf-600 text-golf-600 hover:bg-golf-50 px-6 py-2 rounded-full shadow-sm transition-all duration-300"
-            >
-              スコアを入力する
-            </Button>
-          </Link>
+          <Button 
+            className="bg-golf-600 hover:bg-golf-700 text-white px-6 py-2 rounded-full shadow-md transition-all duration-300 hover:shadow-lg"
+            onClick={() => navigate("/players")}
+          >
+            プレイヤー一覧を見る
+          </Button>
+          <Button
+            variant="outline"
+            className="border-golf-600 text-golf-600 hover:bg-golf-50 px-6 py-2 rounded-full shadow-sm transition-all duration-300"
+            onClick={() => navigate("/submit-score")}
+          >
+            スコアを入力する
+          </Button>
         </div>
       </div>
 
@@ -40,7 +47,7 @@ export default function Home() {
           icon={<Users className="h-10 w-10 text-golf-500" />}
           title="プレイヤー管理"
           description="部員のプロフィールと基本情報を確認できます。写真や学部、入学年度などの情報を一覧で表示します。"
-          href="/players"
+          onNavigate={() => navigate("/players")}
           buttonText="表示する"
         />
 
@@ -48,7 +55,7 @@ export default function Home() {
           icon={<BarChart2 className="h-10 w-10 text-golf-500" />}
           title="統計比較"
           description="全部員の統計情報を一覧・比較できます。平均スコア、パット数、OB率などを並び替えて表示します。"
-          href="/playerstats"
+          onNavigate={() => navigate("/playerstats")}
           buttonText="表示する"
         />
 
@@ -56,7 +63,7 @@ export default function Home() {
           icon={<PlusCircle className="h-10 w-10 text-golf-500" />}
           title="スコア入力"
           description="ラウンド結果を簡単に記録できます。通常入力とホール別入力の2種類の方法から選べます。"
-          href="/submit-score"
+          onNavigate={() => navigate("/submit-score")}
           buttonText="入力する"
         />
       </div>
@@ -86,13 +93,13 @@ function FeatureCard({
   icon,
   title,
   description,
-  href,
+  onNavigate,
   buttonText,
 }: {
   icon: React.ReactNode
   title: string
   description: string
-  href: string
+  onNavigate: () => void
   buttonText: string
 }) {
   return (
@@ -109,9 +116,12 @@ function FeatureCard({
         <CardDescription className="text-gray-600 text-base min-h-[80px]">{description}</CardDescription>
       </CardContent>
       <CardFooter className="p-6 pt-0">
-        <Link href={href} className="w-full">
-          <Button className="w-full bg-golf-600 hover:bg-golf-700 text-white">{buttonText}</Button>
-        </Link>
+        <Button 
+          className="w-full bg-golf-600 hover:bg-golf-700 text-white"
+          onClick={onNavigate}
+        >
+          {buttonText}
+        </Button>
       </CardFooter>
     </Card>
   )
