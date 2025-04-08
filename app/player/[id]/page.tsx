@@ -65,6 +65,49 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
 
   const stats = await getPlayerStats(id);
   const rounds = await getPlayerRounds(id);
+  
+  // 現在の年度を計算
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  // 4月1日より前なら前年度とする
+  const currentFiscalYear = now.getMonth() < 3 ? currentYear - 1 : currentYear
+  
+  // 回生（学年）を計算
+  let grade = 0
+  if (player.admission_year) {
+    grade = currentFiscalYear - player.admission_year + 1
+  }
+  
+  // 学年表示用の文字列（4回生より上はOB）
+  const gradeDisplay = player.admission_year 
+    ? (grade > 4 ? 'OB' : `${grade}回生`) 
+    : null
+    
+  // 回生に応じた色クラスを設定
+  const getBadgeColorClass = (grade: number): string => {
+    if (grade > 4) return 'bg-gray-700'; // OB
+    switch (grade) {
+      case 1: return 'bg-blue-500';      // 1回生
+      case 2: return 'bg-emerald-500';   // 2回生
+      case 3: return 'bg-amber-500';     // 3回生
+      case 4: return 'bg-red-500';       // 4回生
+      default: return 'bg-golf-500';     // デフォルト
+    }
+  }
+  
+  const getTextColorClass = (grade: number): string => {
+    if (grade > 4) return 'text-gray-700'; // OB
+    switch (grade) {
+      case 1: return 'text-blue-600';      // 1回生
+      case 2: return 'text-emerald-600';   // 2回生
+      case 3: return 'text-amber-600';     // 3回生
+      case 4: return 'text-red-600';       // 4回生
+      default: return 'text-golf-600';     // デフォルト
+    }
+  }
+  
+  const badgeColorClass = player.admission_year ? getBadgeColorClass(grade) : 'bg-golf-500';
+  const textColorClass = player.admission_year ? getTextColorClass(grade) : 'text-golf-600';
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -87,6 +130,13 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
                 fill
                 className="object-cover"
               />
+              {gradeDisplay && (
+                <div className="absolute top-3 left-3">
+                  <Badge className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${badgeColorClass}`}>
+                    {gradeDisplay}
+                  </Badge>
+                </div>
+              )}
             </div>
             <CardContent className="p-6">
               <h1 className="text-2xl font-bold mb-4 text-golf-800">{player.name}</h1>
@@ -101,6 +151,12 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-golf-500" />
                     <span className="text-gray-700">{player.admission_year}年入学</span>
+                  </div>
+                )}
+                {gradeDisplay && (
+                  <div className="flex items-center">
+                    <School className="h-4 w-4 mr-2 text-golf-500" />
+                    <span className={`${textColorClass} font-semibold`}>{gradeDisplay}</span>
                   </div>
                 )}
                 {player.origin && (
@@ -285,7 +341,7 @@ function RoundCard({ round }: { round: Round }) {
         <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-golf-50 to-white">
           <div className="flex flex-wrap justify-between items-start gap-4">
             <div>
-              <h3 className="font-bold text-lg text-golf-800">{round.course_name || "コース名なし"}</h3>
+              <h3 className="font-bold text-lg text-golf-800">{round.club_name || "コース名なし"}</h3>
               <p className="text-sm text-gray-500 flex items-center mt-1">
                 <Calendar className="h-4 w-4 mr-1" />
                 {round.date ? new Date(round.date).toLocaleDateString("ja-JP") : "日付なし"}
@@ -294,7 +350,7 @@ function RoundCard({ round }: { round: Round }) {
             <div className="text-right">
               <div className="text-3xl font-bold text-golf-700">{round.score_total || "-"}</div>
               <div className="text-sm text-gray-600">
-                {round.score_out && round.score_in ? `${round.score_out} - ${round.score_in}` : ""}
+                {round.round_count === 1 && round.score_out && round.score_in ? `${round.score_out} - ${round.score_in}` : ""}
               </div>
             </div>
           </div>
@@ -315,7 +371,7 @@ function RoundCard({ round }: { round: Round }) {
             </div>
             <div className="flex items-center">
               <Trophy className="h-4 w-4 mr-2 text-golf-500" />
-              <span className="text-gray-700">競技: {round.is_competition ? "はい" : "いいえ"}</span>
+              <span className="text-gray-700">ラウンド数: {round.round_count || "-"}</span>
             </div>
           </div>
         </div>
