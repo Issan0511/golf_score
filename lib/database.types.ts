@@ -16,7 +16,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          name: string
+          name?: string
           department?: string | null
           admission_year?: number | null
           origin?: string | null
@@ -38,7 +38,6 @@ export interface Database {
       playerstats: {
         Row: {
           id: string
-          handicap: number | null
           total_score: number | null
           avg_score: number | null
           avg_putt: number | null
@@ -53,10 +52,13 @@ export interface Database {
           dist_161_180: number | null
           dist_181_plus: number | null
           created_at: string | null
+          avg_one_putts: number | null
+          avg_three_putts_or_more: number | null
+          avg_par_on: number | null
+          avg_bogey_on: number | null
         }
         Insert: {
           id: string
-          handicap?: number | null
           total_score?: number | null
           avg_score?: number | null
           avg_putt?: number | null
@@ -71,10 +73,13 @@ export interface Database {
           dist_161_180?: number | null
           dist_181_plus?: number | null
           created_at?: string | null
+          avg_one_putts?: number | null
+          avg_three_putts_or_more?: number | null
+          avg_par_on?: number | null
+          avg_bogey_on?: number | null
         }
         Update: {
           id?: string
-          handicap?: number | null
           total_score?: number | null
           avg_score?: number | null
           avg_putt?: number | null
@@ -89,6 +94,10 @@ export interface Database {
           dist_161_180?: number | null
           dist_181_plus?: number | null
           created_at?: string | null
+          avg_one_putts?: number | null
+          avg_three_putts_or_more?: number | null
+          avg_par_on?: number | null
+          avg_bogey_on?: number | null
         }
       }
       rounds: {

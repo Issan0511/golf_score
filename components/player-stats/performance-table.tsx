@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Cloud, Flag, Golf } from "@/components/golf-icon"
 import { Badge } from "@/components/ui/badge"
-import { GuitarIcon as Golf, Flag, Cloud } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PlayerWithStats } from "@/types/player-stats"
 
 interface PerformanceTableProps {
@@ -34,23 +34,23 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
             <TableHead className="font-semibold text-gray-700 text-right">
               <div className="flex items-center justify-end">
                 <Flag className="h-4 w-4 mr-1 text-green-500" />
-                パーオン
+                パーオン率
               </div>
             </TableHead>
             <TableHead className="font-semibold text-gray-700 text-right">
               <div className="flex items-center justify-end">
                 <Flag className="h-4 w-4 mr-1 text-green-500" />
-                ボギーオン
+                ボギーオン率
               </div>
             </TableHead>
             <TableHead className="font-semibold text-gray-700 text-right">
               <div className="flex items-center justify-end">
                 <Flag className="h-4 w-4 mr-1 text-red-500" />
-                ピン奪取
+                ピン奪取率
               </div>
             </TableHead>
 
-            {/* OB関連の統計 */}
+            {/* OB関連の統計 - 既存フィールドを使用 */}
             <TableHead className="font-semibold text-gray-700 text-right">
               <div className="flex items-center justify-end">
                 <Cloud className="h-4 w-4 mr-1 text-gray-500" />
@@ -85,76 +85,76 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
               
               {/* パット関連の統計 */}
               <TableCell className="text-right font-medium">
-                {player.performance?.one_putts !== undefined ? (
+                {player.stats?.avg_one_putts !== undefined ? (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {player.performance.one_putts}
+                    {player.stats.avg_one_putts.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.performance?.three_putts_or_more !== undefined ? (
+                {player.stats?.avg_three_putts_or_more !== undefined ? (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {player.performance.three_putts_or_more}
+                    {player.stats.avg_three_putts_or_more.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
 
-              {/* グリーン関連の統計 */}
+              {/* グリーン関連の統計 - パーセンテージで表示 */}
               <TableCell className="text-right font-medium">
-                {player.performance?.par_on !== undefined ? (
+                {player.stats?.avg_par_on !== undefined ? (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    {player.performance.par_on}
+                    {player.stats.avg_par_on.toFixed(1)}%
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.performance?.bogey_on !== undefined ? (
+                {player.stats?.avg_bogey_on !== undefined ? (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    {player.performance.bogey_on}
+                    {player.stats.avg_bogey_on.toFixed(1)}%
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.performance?.in_pin !== undefined ? (
+                {player.stats?.pin_rate !== undefined ? (
                   <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                    {player.performance.in_pin}
+                    {(player.stats.pin_rate * 100).toFixed(1)}%
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
 
-              {/* OB関連の統計 */}
+              {/* OB関連の統計 - 既存フィールドを使用 */}
               <TableCell className="text-right font-medium">
-                {player.performance?.ob_1w !== undefined ? (
+                {player.stats?.avg_ob1w !== undefined ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                    {player.performance.ob_1w}
+                    {player.stats.avg_ob1w.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.performance?.ob_2nd !== undefined ? (
+                {player.stats?.avg_ob_2nd !== undefined ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                    {player.performance.ob_2nd}
+                    {player.stats.avg_ob_2nd.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.performance?.ob_other !== undefined ? (
+                {player.stats?.avg_ob_other !== undefined ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                    {player.performance.ob_other}
+                    {player.stats.avg_ob_other.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"

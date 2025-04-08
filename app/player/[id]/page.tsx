@@ -217,15 +217,6 @@ export default function PlayerPage() {
                   </div>
                 )}
               </div>
-
-              {stats?.handicap && (
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">ハンディキャップ</span>
-                    <Badge className="bg-golf-600 text-white px-2 py-1">{stats.handicap.toFixed(1)}</Badge>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

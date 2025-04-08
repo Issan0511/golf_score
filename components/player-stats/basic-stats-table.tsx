@@ -40,15 +40,6 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
             </TableHead>
             <TableHead
               className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
-              onClick={() => onSort("handicap")}
-            >
-              <div className="flex items-center justify-end">
-                <Trophy className="h-4 w-4 mr-1 text-golf-500" />
-                HC {sortField === "handicap" && (sortDirection === "asc" ? "↑" : "↓")}
-              </div>
-            </TableHead>
-            <TableHead
-              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
               onClick={() => onSort("avg_putt")}
             >
               <div className="flex items-center justify-end">
@@ -92,15 +83,6 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                 {player.stats?.avg_score !== undefined && player.stats?.avg_score !== null ? (
                   <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
                     {player.stats.avg_score.toFixed(1)}
-                  </Badge>
-                ) : (
-                  "-"
-                )}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {player.stats?.handicap !== undefined && player.stats?.handicap !== null ? (
-                  <Badge variant="outline" className="bg-golf-50 text-golf-700 border-golf-200">
-                    {player.stats.handicap.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"

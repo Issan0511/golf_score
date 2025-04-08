@@ -29,42 +29,19 @@ export default function PlayerStatsPage() {
 
         const playersWithStats: PlayerWithStats[] = []
 
-        // Fetch stats and performance data for each player
+        // Fetch stats for each player
         for (const player of playersData) {
-          // Get player stats
+          // Get player stats (now includes performance stats as well)
           const { data: statsData, error: statsError } = await supabase
             .from("playerstats")
             .select("*")
             .eq("id", player.id)
             .single()
-          
-          // プレイヤーIDに紐づくラウンドを検索し、そのラウンドに関連するパフォーマンスデータを取得
-          const { data: roundsData, error: roundsError } = await supabase
-            .from("rounds")
-            .select("id")
-            .eq("player_id", player.id)
-            .order("date", { ascending: false })
-            .limit(1)
-
-          let performanceData = null
-          let perfError = null
-          
-          // ラウンドデータが存在する場合、そのラウンドのパフォーマンスデータを取得
-          if (roundsData && roundsData.length > 0) {
-            const { data: perfData, error: pError } = await supabase
-              .from("performance")
-              .select("*")
-              .eq("id", roundsData[0].id)
-              .single()
-              
-            performanceData = perfData
-            perfError = pError
-          }
 
           playersWithStats.push({
             ...player,
             stats: statsError ? null : statsData,
-            performance: perfError ? null : performanceData
+            performance: statsError ? null : statsData // 同じデータを使用する
           })
         }
 
