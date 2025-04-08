@@ -34,7 +34,7 @@ async function getPlayerStats(playerId: string) {
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([])
-  const [playersWithStats, setPlayersWithStats] = useState<(Player & { stats?: PlayerStats })[]>([])
+  const [playersWithStats, setPlayersWithStats] = useState<(Player & { stats: PlayerStats | null })[]>([])
   const [loading, setLoading] = useState(true)
   const { isNavigating, navigate } = useLoadingNavigation()
 
@@ -130,7 +130,7 @@ function PlayerCard({
   onViewDetails 
 }: { 
   player: Player; 
-  stats?: PlayerStats;
+  stats: PlayerStats | null;
   currentFiscalYear: number;
   onViewDetails: () => void;
 }) {

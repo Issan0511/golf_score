@@ -38,7 +38,6 @@ export interface Database {
       playerstats: {
         Row: {
           id: string
-          total_score: number | null
           avg_score: number | null
           avg_putt: number | null
           avg_ob1w: number | null
@@ -59,7 +58,6 @@ export interface Database {
         }
         Insert: {
           id: string
-          total_score?: number | null
           avg_score?: number | null
           avg_putt?: number | null
           avg_ob1w?: number | null
@@ -80,7 +78,6 @@ export interface Database {
         }
         Update: {
           id?: string
-          total_score?: number | null
           avg_score?: number | null
           avg_putt?: number | null
           avg_ob1w?: number | null

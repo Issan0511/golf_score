@@ -31,9 +31,16 @@ export default function PlayerStatsPage() {
 
         // Fetch stats for each player
         for (const player of playersData) {
-          // Get player stats (now includes performance stats as well)
+          // Get player stats
           const { data: statsData, error: statsError } = await supabase
             .from("playerstats")
+            .select("*")
+            .eq("id", player.id)
+            .single()
+
+          // Get performance data
+          const { data: perfData, error: perfError } = await supabase
+            .from("performance")
             .select("*")
             .eq("id", player.id)
             .single()
@@ -41,7 +48,7 @@ export default function PlayerStatsPage() {
           playersWithStats.push({
             ...player,
             stats: statsError ? null : statsData,
-            performance: statsError ? null : statsData // 同じデータを使用する
+            performance: perfError ? null : perfData
           })
         }
 
@@ -75,11 +82,19 @@ export default function PlayerStatsPage() {
       return sortDirection === "asc" ? deptA.localeCompare(deptB) : deptB.localeCompare(deptA)
     }
 
-    // Sort by stats fields
-    const statsA = (a.stats?.[sortField as keyof typeof a.stats] as number | undefined) || 0
-    const statsB = (b.stats?.[sortField as keyof typeof b.stats] as number | undefined) || 0
-
-    return sortDirection === "asc" ? statsA - statsB : statsB - statsA
+    // Sort by stats fields - 型安全な処理に修正
+    if (a.stats && b.stats && sortField in a.stats && sortField in b.stats) {
+      const statsA = (a.stats[sortField as keyof typeof a.stats] as number | null) ?? 0
+      const statsB = (b.stats[sortField as keyof typeof b.stats] as number | null) ?? 0
+      return sortDirection === "asc" ? statsA - statsB : statsB - statsA
+    }
+    
+    // どちらかのstatsがない場合は、statsがあるプレイヤーを優先
+    if (a.stats && !b.stats) return sortDirection === "asc" ? -1 : 1
+    if (!a.stats && b.stats) return sortDirection === "asc" ? 1 : -1
+    
+    // どちらもstatsがない場合は、名前でソート
+    return sortDirection === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
   })
 
   const handleSort = (field: string) => {

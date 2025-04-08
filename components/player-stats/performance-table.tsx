@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Cloud, Flag, Golf } from "@/components/golf-icon"
+import { Cloud, Flag, GuitarIcon as Golf } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PlayerWithStats } from "@/types/player-stats"
@@ -85,7 +85,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
               
               {/* パット関連の統計 */}
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_one_putts !== undefined ? (
+                {player.stats?.avg_one_putts != null ? (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     {player.stats.avg_one_putts.toFixed(1)}
                   </Badge>
@@ -94,7 +94,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_three_putts_or_more !== undefined ? (
+                {player.stats?.avg_three_putts_or_more != null ? (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     {player.stats.avg_three_putts_or_more.toFixed(1)}
                   </Badge>
@@ -105,7 +105,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
 
               {/* グリーン関連の統計 - パーセンテージで表示 */}
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_par_on !== undefined ? (
+                {player.stats?.avg_par_on != null ? (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                     {player.stats.avg_par_on.toFixed(1)}%
                   </Badge>
@@ -114,7 +114,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_bogey_on !== undefined ? (
+                {player.stats?.avg_bogey_on != null ? (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                     {player.stats.avg_bogey_on.toFixed(1)}%
                   </Badge>
@@ -123,7 +123,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.stats?.pin_rate !== undefined ? (
+                {player.stats?.pin_rate != null ? (
                   <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
                     {(player.stats.pin_rate * 100).toFixed(1)}%
                   </Badge>
@@ -134,7 +134,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
 
               {/* OB関連の統計 - 既存フィールドを使用 */}
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_ob1w !== undefined ? (
+                {player.stats?.avg_ob1w != null ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
                     {player.stats.avg_ob1w.toFixed(1)}
                   </Badge>
@@ -143,7 +143,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_ob_2nd !== undefined ? (
+                {player.stats?.avg_ob_2nd != null ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
                     {player.stats.avg_ob_2nd.toFixed(1)}
                   </Badge>
@@ -152,7 +152,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_ob_other !== undefined ? (
+                {player.stats?.avg_ob_other != null ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
                     {player.stats.avg_ob_other.toFixed(1)}
                   </Badge>

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { supabase, type Player, type PlayerStats, type Round } from "@/lib/supabase"
+import { supabase, type Player, type PlayerStats, type Rounds as Round } from "@/lib/supabase"
 import { ArrowLeft, School, Calendar, MapPin, Trophy, Cloud, Flag, GuitarIcon as Golf } from "lucide-react"
 import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
 import { LoadingModal } from "@/components/ui/loading-modal"
@@ -321,7 +321,7 @@ function StatCard({
   multiplier = 1,
 }: {
   title: string
-  value?: number
+  value?: number | null
   decimals?: number
   suffix?: string
   icon?: React.ReactNode
@@ -347,7 +347,7 @@ function StatCard({
   )
 }
 
-function DistanceStatCard({ title, value }: { title: string; value?: number }) {
+function DistanceStatCard({ title, value }: { title: string; value?: number | null }) {
   const percentage = value !== undefined && value !== null ? value * 100 : 0
 
   return (
