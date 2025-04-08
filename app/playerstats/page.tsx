@@ -1,18 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { supabase, type Player, type PlayerStats } from "@/lib/supabase"
-import { Search, ArrowUpDown, Trophy, GuitarIcon as Golf, Flag, Cloud } from "lucide-react"
-
-type PlayerWithStats = Player & {
-  stats: PlayerStats | null
-}
+import { ArrowUpDown, Trophy } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { PlayerWithStats } from "@/types/player-stats"
+import { BasicStatsTable } from "@/components/player-stats/basic-stats-table"
+import { PerformanceTable } from "@/components/player-stats/performance-table"
+import { DistanceStatsTable } from "@/components/player-stats/distance-stats-table"
+import { StatsFilter } from "@/components/player-stats/stats-filter"
 
 export default function PlayerStatsPage() {
   const [players, setPlayers] = useState<PlayerWithStats[]>([])
@@ -20,6 +16,7 @@ export default function PlayerStatsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortField, setSortField] = useState("name")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const [showAllStats, setShowAllStats] = useState(false)
 
   useEffect(() => {
     async function fetchPlayersWithStats() {
@@ -32,17 +29,42 @@ export default function PlayerStatsPage() {
 
         const playersWithStats: PlayerWithStats[] = []
 
-        // Fetch stats for each player
+        // Fetch stats and performance data for each player
         for (const player of playersData) {
+          // Get player stats
           const { data: statsData, error: statsError } = await supabase
             .from("playerstats")
             .select("*")
             .eq("id", player.id)
             .single()
+          
+          // プレイヤーIDに紐づくラウンドを検索し、そのラウンドに関連するパフォーマンスデータを取得
+          const { data: roundsData, error: roundsError } = await supabase
+            .from("rounds")
+            .select("id")
+            .eq("player_id", player.id)
+            .order("date", { ascending: false })
+            .limit(1)
+
+          let performanceData = null
+          let perfError = null
+          
+          // ラウンドデータが存在する場合、そのラウンドのパフォーマンスデータを取得
+          if (roundsData && roundsData.length > 0) {
+            const { data: perfData, error: pError } = await supabase
+              .from("performance")
+              .select("*")
+              .eq("id", roundsData[0].id)
+              .single()
+              
+            performanceData = perfData
+            perfError = pError
+          }
 
           playersWithStats.push({
             ...player,
             stats: statsError ? null : statsData,
+            performance: perfError ? null : performanceData
           })
         }
 
@@ -77,8 +99,8 @@ export default function PlayerStatsPage() {
     }
 
     // Sort by stats fields
-    const statsA = (a.stats?.[sortField as keyof PlayerStats] as number | undefined) || 0
-    const statsB = (b.stats?.[sortField as keyof PlayerStats] as number | undefined) || 0
+    const statsA = (a.stats?.[sortField as keyof typeof a.stats] as number | undefined) || 0
+    const statsB = (b.stats?.[sortField as keyof typeof b.stats] as number | undefined) || 0
 
     return sortDirection === "asc" ? statsA - statsB : statsB - statsA
   })
@@ -103,43 +125,16 @@ export default function PlayerStatsPage() {
 
       <Card className="mb-8 border-0 shadow-md overflow-hidden">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="プレイヤー名または学部で検索..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-              />
-            </div>
-            <div className="w-full md:w-64">
-              <Select value={sortField} onValueChange={setSortField}>
-                <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-                  <SelectValue placeholder="並び替え項目" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">名前</SelectItem>
-                  <SelectItem value="department">学部</SelectItem>
-                  <SelectItem value="avg_score">平均スコア</SelectItem>
-                  <SelectItem value="handicap">ハンディキャップ</SelectItem>
-                  <SelectItem value="avg_putt">平均パット数</SelectItem>
-                  <SelectItem value="pin_rate">ピン率</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-full md:w-64">
-              <Select value={sortDirection} onValueChange={(value) => setSortDirection(value as "asc" | "desc")}>
-                <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-                  <SelectValue placeholder="並び順" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">昇順</SelectItem>
-                  <SelectItem value="desc">降順</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <StatsFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            sortField={sortField}
+            setSortField={setSortField}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            showAllStats={showAllStats}
+            setShowAllStats={setShowAllStats}
+          />
         </CardContent>
       </Card>
 
@@ -157,131 +152,42 @@ export default function PlayerStatsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600"
-                      onClick={() => handleSort("name")}
-                    >
-                      名前 {sortField === "name" && (sortDirection === "asc" ? "↑" : "↓")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600"
-                      onClick={() => handleSort("department")}
-                    >
-                      学部 {sortField === "department" && (sortDirection === "asc" ? "↑" : "↓")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
-                      onClick={() => handleSort("avg_score")}
-                    >
-                      <div className="flex items-center justify-end">
-                        <Trophy className="h-4 w-4 mr-1 text-amber-500" />
-                        平均スコア {sortField === "avg_score" && (sortDirection === "asc" ? "↑" : "↓")}
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
-                      onClick={() => handleSort("handicap")}
-                    >
-                      <div className="flex items-center justify-end">
-                        <Trophy className="h-4 w-4 mr-1 text-golf-500" />
-                        HC {sortField === "handicap" && (sortDirection === "asc" ? "↑" : "↓")}
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
-                      onClick={() => handleSort("avg_putt")}
-                    >
-                      <div className="flex items-center justify-end">
-                        <Golf className="h-4 w-4 mr-1 text-blue-500" />
-                        平均パット {sortField === "avg_putt" && (sortDirection === "asc" ? "↑" : "↓")}
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
-                      onClick={() => handleSort("pin_rate")}
-                    >
-                      <div className="flex items-center justify-end">
-                        <Flag className="h-4 w-4 mr-1 text-red-500" />
-                        ピン率 {sortField === "pin_rate" && (sortDirection === "asc" ? "↑" : "↓")}
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
-                      onClick={() => handleSort("avg_ob1w")}
-                    >
-                      <div className="flex items-center justify-end">
-                        <Cloud className="h-4 w-4 mr-1 text-gray-500" />
-                        OB(1W) {sortField === "avg_ob1w" && (sortDirection === "asc" ? "↑" : "↓")}
-                      </div>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedPlayers.map((player) => (
-                    <TableRow key={player.id} className="hover:bg-golf-50">
-                      <TableCell>
-                        <Link
-                          href={`/player/${player.id}`}
-                          className="text-golf-600 hover:text-golf-800 font-medium hover:underline"
-                        >
-                          {player.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-gray-600">{player.department || "-"}</TableCell>
-                      <TableCell className="text-right font-medium">
-                        {player.stats?.avg_score !== undefined && player.stats?.avg_score !== null ? (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                            {player.stats.avg_score.toFixed(1)}
-                          </Badge>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {player.stats?.handicap !== undefined && player.stats?.handicap !== null ? (
-                          <Badge variant="outline" className="bg-golf-50 text-golf-700 border-golf-200">
-                            {player.stats.handicap.toFixed(1)}
-                          </Badge>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {player.stats?.avg_putt !== undefined && player.stats?.avg_putt !== null ? (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            {player.stats.avg_putt.toFixed(1)}
-                          </Badge>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {player.stats?.pin_rate !== undefined && player.stats?.pin_rate !== null ? (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                            {(player.stats.pin_rate * 100).toFixed(1)}%
-                          </Badge>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {player.stats?.avg_ob1w !== undefined && player.stats?.avg_ob1w !== null ? (
-                          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                            {player.stats.avg_ob1w.toFixed(2)}
-                          </Badge>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <BasicStatsTable
+              players={sortedPlayers}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 全詳細項目を表示するセクション - showAllStats=trueの時のみ表示 */}
+      {!loading && showAllStats && (
+        <Card className="border-0 shadow-lg overflow-hidden mt-8">
+          <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+            <CardTitle className="text-golf-800 flex items-center">
+              <ArrowUpDown className="h-5 w-5 mr-2 text-golf-500" />
+              パフォーマンス詳細
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <PerformanceTable players={sortedPlayers} />
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* 距離帯別成功率のテーブル - showAllStats=trueの時のみ表示 */}
+      {!loading && showAllStats && (
+        <Card className="border-0 shadow-lg overflow-hidden mt-8">
+          <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+            <CardTitle className="text-golf-800 flex items-center">
+              <Trophy className="h-5 w-5 mr-2 text-amber-500" />
+              距離帯別成功率
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DistanceStatsTable players={sortedPlayers} />
           </CardContent>
         </Card>
       )}
