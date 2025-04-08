@@ -1,0 +1,610 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import { supabase, type Player, type Round, type Performance } from "@/lib/supabase"
+import { Calendar, Cloud, Flag, GuitarIcon as Golf, Trophy, User, MessageSquare } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
+
+export default function SubmitScorePage() {
+  const router = useRouter()
+  const [players, setPlayers] = useState<Player[]>([])
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
+  // Round data
+  const [roundData, setRoundData] = useState<Partial<Round>>({
+    date: new Date().toISOString().split("T")[0],
+    round_count: 1.0,
+    is_competition: false,
+  })
+
+  // Performance data
+  const [performanceData, setPerformanceData] = useState<Partial<Performance>>({})
+
+  useEffect(() => {
+    async function fetchPlayers() {
+      try {
+        const { data, error } = await supabase.from("players").select("*").order("name")
+
+        if (error) throw error
+        setPlayers(data)
+      } catch (error) {
+        console.error("Error fetching players:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlayers()
+  }, [])
+
+  const handleRoundChange = (field: keyof Round, value: any) => {
+    setRoundData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handlePerformanceChange = (field: keyof Performance, value: any) => {
+    setPerformanceData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async () => {
+    if (!roundData.player_id || !roundData.date || !roundData.course_name) {
+      toast({
+        title: "入力エラー",
+        description: "プレイヤー、日付、コース名は必須です",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      // Insert round data
+      const { data: roundResult, error: roundError } = await supabase.from("rounds").insert(roundData).select().single()
+
+      if (roundError) throw roundError
+
+      // Insert performance data with the round ID
+      const { error: perfError } = await supabase.from("performance").insert({
+        id: roundResult.id,
+        ...performanceData,
+      })
+
+      if (perfError) throw perfError
+
+      toast({
+        title: "登録完了",
+        description: "スコアが正常に登録されました",
+        variant: "default",
+      })
+      router.push(`/player/${roundData.player_id}`)
+    } catch (error) {
+      console.error("Error submitting score:", error)
+      toast({
+        title: "エラー",
+        description: "スコア登録中にエラーが発生しました",
+        variant: "destructive",
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-golf-600"></div>
+        <p className="mt-4 text-gray-600">データを読み込み中...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl font-bold mb-2 text-golf-800">スコア入力</h1>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          ラウンド情報とパフォーマンス詳細を入力してください。すべての情報は統計に反映されます。
+        </p>
+      </div>
+
+      <Tabs defaultValue="round" className="fade-in">
+        <TabsList className="mb-6 bg-white shadow-sm border border-gray-100 p-1 rounded-lg">
+          <TabsTrigger value="round" className="data-[state=active]:bg-golf-50 data-[state=active]:text-golf-700">
+            ラウンド情報
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-golf-50 data-[state=active]:text-golf-700">
+            パフォーマンス詳細
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="round">
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+              <CardTitle className="text-golf-800">ラウンド基本情報</CardTitle>
+              <CardDescription>ラウンドの日付、コース、スコアなどの基本情報を入力してください</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="プレイヤー" icon={<User className="h-4 w-4 text-golf-500" />}>
+                  <Select value={roundData.player_id} onValueChange={(value) => handleRoundChange("player_id", value)}>
+                    <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                      <SelectValue placeholder="プレイヤーを選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {players.map((player) => (
+                        <SelectItem key={player.id} value={player.id}>
+                          {player.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField label="日付" icon={<Calendar className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={roundData.date}
+                    onChange={(e) => handleRoundChange("date", e.target.value)}
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="コース名" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="course_name"
+                    value={roundData.course_name || ""}
+                    onChange={(e) => handleRoundChange("course_name", e.target.value)}
+                    placeholder="例: 霞ヶ関カンツリー倶楽部"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="クラブ名（オプション）" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="club_name"
+                    value={roundData.club_name || ""}
+                    onChange={(e) => handleRoundChange("club_name", e.target.value)}
+                    placeholder="例: 東京大学ゴルフ部"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+                  <Select
+                    value={roundData.round_count?.toString()}
+                    onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
+                  >
+                    <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                      <SelectValue placeholder="ラウンド数を選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
+                      <SelectItem value="1.0">1.0（1ラウンド）</SelectItem>
+                      <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
+                      <SelectItem value="2.0">2.0（2ラウンド）</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField label="天気" icon={<Cloud className="h-4 w-4 text-golf-500" />}>
+                  <Select
+                    value={roundData.weather || ""}
+                    onValueChange={(value) => handleRoundChange("weather", value)}
+                  >
+                    <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                      <SelectValue placeholder="天気を選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="晴れ">晴れ</SelectItem>
+                      <SelectItem value="曇り">曇り</SelectItem>
+                      <SelectItem value="雨">雨</SelectItem>
+                      <SelectItem value="雪">雪</SelectItem>
+                      <SelectItem value="風強い">風強い</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                <FormField label="トータルスコア" icon={<Trophy className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="score_total"
+                    type="number"
+                    value={roundData.score_total || ""}
+                    onChange={(e) => handleRoundChange("score_total", Number.parseFloat(e.target.value))}
+                    placeholder="例: 85"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="OUT" icon={<Trophy className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="score_out"
+                    type="number"
+                    value={roundData.score_out || ""}
+                    onChange={(e) => handleRoundChange("score_out", Number.parseFloat(e.target.value))}
+                    placeholder="例: 43"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="IN" icon={<Trophy className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="score_in"
+                    type="number"
+                    value={roundData.score_in || ""}
+                    onChange={(e) => handleRoundChange("score_in", Number.parseFloat(e.target.value))}
+                    placeholder="例: 42"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField label="パット数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="putts"
+                    type="number"
+                    value={roundData.putts || ""}
+                    onChange={(e) => handleRoundChange("putts", Number.parseInt(e.target.value))}
+                    placeholder="例: 32"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="コースレート" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+                  <Input
+                    id="course_rate"
+                    type="number"
+                    step="0.1"
+                    value={roundData.course_rate || ""}
+                    onChange={(e) => handleRoundChange("course_rate", Number.parseFloat(e.target.value))}
+                    placeholder="例: 72.5"
+                    className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                  />
+                </FormField>
+
+                <FormField label="使用ティー" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+                  <Select
+                    value={roundData.used_tee || ""}
+                    onValueChange={(value) => handleRoundChange("used_tee", value)}
+                  >
+                    <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                      <SelectValue placeholder="使用ティーを選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="バック">バック</SelectItem>
+                      <SelectItem value="レギュラー">レギュラー</SelectItem>
+                      <SelectItem value="フロント">フロント</SelectItem>
+                      <SelectItem value="レディース">レディース</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </div>
+
+              <div className="space-y-2 pt-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="is_competition"
+                    checked={roundData.is_competition || false}
+                    onCheckedChange={(checked) => handleRoundChange("is_competition", checked)}
+                    className="text-golf-500 focus:ring-golf-500"
+                  />
+                  <Label htmlFor="is_competition" className="text-gray-700">
+                    競技ラウンド
+                  </Label>
+                </div>
+              </div>
+
+              <FormField label="助監督へのコメント" icon={<MessageSquare className="h-4 w-4 text-golf-500" />}>
+                <Textarea
+                  id="comment_to_subcoach"
+                  value={roundData.comment_to_subcoach || ""}
+                  onChange={(e) => handleRoundChange("comment_to_subcoach", e.target.value)}
+                  placeholder="ラウンド中の気づきや改善点などを記入してください"
+                  rows={4}
+                  className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                />
+              </FormField>
+            </CardContent>
+            <CardFooter className="bg-gray-50 p-6 border-t border-gray-100">
+              <Button
+                onClick={() => document.querySelector('[data-value="performance"]')?.click()}
+                className="bg-golf-600 hover:bg-golf-700 text-white"
+              >
+                次へ: パフォーマンス詳細
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+              <CardTitle className="text-golf-800">パフォーマンス詳細</CardTitle>
+              <CardDescription>ラウンド中のパフォーマンス詳細を入力してください</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-8">
+              <SectionCard title="パット" icon={<Golf className="h-5 w-5 text-blue-500" />}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField label="1パット数">
+                    <Input
+                      id="one_putts"
+                      type="number"
+                      value={performanceData.one_putts || ""}
+                      onChange={(e) => handlePerformanceChange("one_putts", Number.parseInt(e.target.value))}
+                      placeholder="例: 5"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                  <FormField label="3パット以上の数">
+                    <Input
+                      id="three_putts_or_more"
+                      type="number"
+                      value={performanceData.three_putts_or_more || ""}
+                      onChange={(e) => handlePerformanceChange("three_putts_or_more", Number.parseInt(e.target.value))}
+                      placeholder="例: 2"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                </div>
+              </SectionCard>
+
+              <SectionCard title="グリーン" icon={<Flag className="h-5 w-5 text-red-500" />}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FormField label="パーオン数">
+                    <Input
+                      id="par_on"
+                      type="number"
+                      value={performanceData.par_on || ""}
+                      onChange={(e) => handlePerformanceChange("par_on", Number.parseInt(e.target.value))}
+                      placeholder="例: 8"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                  <FormField label="ボギーオン数">
+                    <Input
+                      id="bogey_on"
+                      type="number"
+                      value={performanceData.bogey_on || ""}
+                      onChange={(e) => handlePerformanceChange("bogey_on", Number.parseInt(e.target.value))}
+                      placeholder="例: 6"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                  <FormField label="ピン奪取数">
+                    <Input
+                      id="in_pin"
+                      type="number"
+                      value={performanceData.in_pin || ""}
+                      onChange={(e) => handlePerformanceChange("in_pin", Number.parseInt(e.target.value))}
+                      placeholder="例: 4"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                </div>
+              </SectionCard>
+
+              <SectionCard title="OB" icon={<Cloud className="h-5 w-5 text-gray-500" />}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FormField label="OB（1W）">
+                    <Input
+                      id="ob_1w"
+                      type="number"
+                      value={performanceData.ob_1w || ""}
+                      onChange={(e) => handlePerformanceChange("ob_1w", Number.parseInt(e.target.value))}
+                      placeholder="例: 1"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                  <FormField label="OB（その他）">
+                    <Input
+                      id="ob_other"
+                      type="number"
+                      value={performanceData.ob_other || ""}
+                      onChange={(e) => handlePerformanceChange("ob_other", Number.parseInt(e.target.value))}
+                      placeholder="例: 0"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                  <FormField label="OB（セカンド）">
+                    <Input
+                      id="ob_2nd"
+                      type="number"
+                      value={performanceData.ob_2nd || ""}
+                      onChange={(e) => handlePerformanceChange("ob_2nd", Number.parseInt(e.target.value))}
+                      placeholder="例: 0"
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                </div>
+              </SectionCard>
+
+              <SectionCard title="距離帯別成功率" icon={<Trophy className="h-5 w-5 text-amber-500" />}>
+                <DistanceInputGroup
+                  title="1-30m"
+                  successValue={performanceData.dist_1_30_success}
+                  totalValue={performanceData.dist_1_30_total}
+                  onSuccessChange={(value) => handlePerformanceChange("dist_1_30_success", value)}
+                  onTotalChange={(value) => handlePerformanceChange("dist_1_30_total", value)}
+                />
+
+                <DistanceInputGroup
+                  title="31-80m"
+                  successValue={performanceData.dist_31_80_success}
+                  totalValue={performanceData.dist_31_80_total}
+                  onSuccessChange={(value) => handlePerformanceChange("dist_31_80_success", value)}
+                  onTotalChange={(value) => handlePerformanceChange("dist_31_80_total", value)}
+                />
+
+                <DistanceInputGroup
+                  title="81-120m"
+                  successValue={performanceData.dist_81_120_success}
+                  totalValue={performanceData.dist_81_120_total}
+                  onSuccessChange={(value) => handlePerformanceChange("dist_81_120_success", value)}
+                  onTotalChange={(value) => handlePerformanceChange("dist_81_120_total", value)}
+                />
+
+                <DistanceInputGroup
+                  title="121-160m"
+                  successValue={performanceData.dist_121_160_success}
+                  totalValue={performanceData.dist_121_160_total}
+                  onSuccessChange={(value) => handlePerformanceChange("dist_121_160_success", value)}
+                  onTotalChange={(value) => handlePerformanceChange("dist_121_160_total", value)}
+                />
+
+                <DistanceInputGroup
+                  title="161-180m"
+                  successValue={performanceData.dist_161_180_success}
+                  totalValue={performanceData.dist_161_180_total}
+                  onSuccessChange={(value) => handlePerformanceChange("dist_161_180_success", value)}
+                  onTotalChange={(value) => handlePerformanceChange("dist_161_180_total", value)}
+                />
+
+                <DistanceInputGroup
+                  title="181m+"
+                  successValue={performanceData.dist_181_plus_success}
+                  totalValue={performanceData.dist_181_plus_total}
+                  onSuccessChange={(value) => handlePerformanceChange("dist_181_plus_success", value)}
+                  onTotalChange={(value) => handlePerformanceChange("dist_181_plus_total", value)}
+                />
+              </SectionCard>
+            </CardContent>
+            <CardFooter className="bg-gray-50 p-6 border-t border-gray-100 flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => document.querySelector('[data-value="round"]')?.click()}
+                className="border-golf-500 text-golf-600 hover:bg-golf-50"
+              >
+                戻る: ラウンド情報
+              </Button>
+              <Button onClick={handleSubmit} disabled={submitting} className="bg-golf-600 hover:bg-golf-700 text-white">
+                {submitting ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    送信中...
+                  </>
+                ) : (
+                  "スコアを登録する"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+function FormField({
+  label,
+  children,
+  icon,
+}: {
+  label: string
+  children: React.ReactNode
+  icon?: React.ReactNode
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="flex items-center text-gray-700">
+        {icon && <span className="mr-2">{icon}</span>}
+        {label}
+      </Label>
+      {children}
+    </div>
+  )
+}
+
+function SectionCard({
+  title,
+  children,
+  icon,
+}: {
+  title: string
+  children: React.ReactNode
+  icon?: React.ReactNode
+}) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="flex items-center p-4 bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+        {icon}
+        <h3 className="text-lg font-medium ml-2 text-golf-800">{title}</h3>
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  )
+}
+
+function DistanceInputGroup({
+  title,
+  successValue,
+  totalValue,
+  onSuccessChange,
+  onTotalChange,
+}: {
+  title: string
+  successValue?: number
+  totalValue?: number
+  onSuccessChange: (value: number) => void
+  onTotalChange: (value: number) => void
+}) {
+  const successRate = totalValue && totalValue > 0 && successValue !== undefined ? (successValue / totalValue) * 100 : 0
+
+  return (
+    <div className="mb-6 last:mb-0">
+      <div className="flex items-center mb-3">
+        <h4 className="text-md font-medium text-gray-700">{title}</h4>
+        {totalValue && totalValue > 0 && successValue !== undefined && (
+          <div className="ml-auto">
+            <span className="text-sm font-medium px-2 py-1 bg-golf-50 text-golf-700 rounded-full">
+              {successRate.toFixed(1)}%
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField label="成功数">
+          <Input
+            type="number"
+            value={successValue || ""}
+            onChange={(e) => onSuccessChange(Number.parseInt(e.target.value))}
+            placeholder="例: 3"
+            className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+          />
+        </FormField>
+        <FormField label="総数">
+          <Input
+            type="number"
+            value={totalValue || ""}
+            onChange={(e) => onTotalChange(Number.parseInt(e.target.value))}
+            placeholder="例: 5"
+            className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+          />
+        </FormField>
+      </div>
+      {totalValue && totalValue > 0 && (
+        <div className="mt-2 w-full bg-gray-100 rounded-full h-2">
+          <div
+            className="bg-golf-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${successRate}%` }}
+          ></div>
+        </div>
+      )}
+    </div>
+  )
+}
+

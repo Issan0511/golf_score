@@ -1,0 +1,233 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      players: {
+        Row: {
+          id: string
+          name: string
+          department: string | null
+          admission_year: number | null
+          origin: string | null
+          highschool: string | null
+          image_url: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          department?: string | null
+          admission_year?: number | null
+          origin?: string | null
+          highschool?: string | null
+          image_url?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          department?: string | null
+          admission_year?: number | null
+          origin?: string | null
+          highschool?: string | null
+          image_url?: string | null
+          created_at?: string | null
+        }
+      }
+      playerstats: {
+        Row: {
+          id: string
+          handicap: number | null
+          total_score: number | null
+          avg_score: number | null
+          avg_putt: number | null
+          avg_ob1w: number | null
+          avg_ob_other: number | null
+          avg_ob_2nd: number | null
+          pin_rate: number | null
+          dist_1_30: number | null
+          dist_31_80: number | null
+          dist_81_120: number | null
+          dist_121_160: number | null
+          dist_161_180: number | null
+          dist_181_plus: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id: string
+          handicap?: number | null
+          total_score?: number | null
+          avg_score?: number | null
+          avg_putt?: number | null
+          avg_ob1w?: number | null
+          avg_ob_other?: number | null
+          avg_ob_2nd?: number | null
+          pin_rate?: number | null
+          dist_1_30?: number | null
+          dist_31_80?: number | null
+          dist_81_120?: number | null
+          dist_121_160?: number | null
+          dist_161_180?: number | null
+          dist_181_plus?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          handicap?: number | null
+          total_score?: number | null
+          avg_score?: number | null
+          avg_putt?: number | null
+          avg_ob1w?: number | null
+          avg_ob_other?: number | null
+          avg_ob_2nd?: number | null
+          pin_rate?: number | null
+          dist_1_30?: number | null
+          dist_31_80?: number | null
+          dist_81_120?: number | null
+          dist_121_160?: number | null
+          dist_161_180?: number | null
+          dist_181_plus?: number | null
+          created_at?: string | null
+        }
+      }
+      rounds: {
+        Row: {
+          id: string
+          player_id: string | null
+          date: string | null
+          course_name: string | null
+          round_count: number | null
+          score_total: number | null
+          score_out: number | null
+          score_in: number | null
+          putts: number | null
+          weather: string | null
+          course_rate: number | null
+          used_tee: string | null
+          is_competition: boolean | null
+          comment_to_subcoach: string | null
+          club_name: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          player_id?: string | null
+          date?: string | null
+          course_name?: string | null
+          round_count?: number | null
+          score_total?: number | null
+          score_out?: number | null
+          score_in?: number | null
+          putts?: number | null
+          weather?: string | null
+          course_rate?: number | null
+          used_tee?: string | null
+          is_competition?: boolean | null
+          comment_to_subcoach?: string | null
+          club_name?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          player_id?: string | null
+          date?: string | null
+          course_name?: string | null
+          round_count?: number | null
+          score_total?: number | null
+          score_out?: number | null
+          score_in?: number | null
+          putts?: number | null
+          weather?: string | null
+          course_rate?: number | null
+          used_tee?: string | null
+          is_competition?: boolean | null
+          comment_to_subcoach?: string | null
+          club_name?: string | null
+          created_at?: string | null
+        }
+      }
+      performance: {
+        Row: {
+          id: string
+          one_putts: number | null
+          three_putts_or_more: number | null
+          par_on: number | null
+          bogey_on: number | null
+          in_pin: number | null
+          ob_1w: number | null
+          ob_other: number | null
+          ob_2nd: number | null
+          dist_1_30_success: number | null
+          dist_1_30_total: number | null
+          dist_31_80_success: number | null
+          dist_31_80_total: number | null
+          dist_81_120_success: number | null
+          dist_81_120_total: number | null
+          dist_121_160_success: number | null
+          dist_121_160_total: number | null
+          dist_161_180_success: number | null
+          dist_161_180_total: number | null
+          dist_181_plus_success: number | null
+          dist_181_plus_total: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id: string
+          one_putts?: number | null
+          three_putts_or_more?: number | null
+          par_on?: number | null
+          bogey_on?: number | null
+          in_pin?: number | null
+          ob_1w?: number | null
+          ob_other?: number | null
+          ob_2nd?: number | null
+          dist_1_30_success?: number | null
+          dist_1_30_total?: number | null
+          dist_31_80_success?: number | null
+          dist_31_80_total?: number | null
+          dist_81_120_success?: number | null
+          dist_81_120_total?: number | null
+          dist_121_160_success?: number | null
+          dist_121_160_total?: number | null
+          dist_161_180_success?: number | null
+          dist_161_180_total?: number | null
+          dist_181_plus_success?: number | null
+          dist_181_plus_total?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          one_putts?: number | null
+          three_putts_or_more?: number | null
+          par_on?: number | null
+          bogey_on?: number | null
+          in_pin?: number | null
+          ob_1w?: number | null
+          ob_other?: number | null
+          ob_2nd?: number | null
+          dist_1_30_success?: number | null
+          dist_1_30_total?: number | null
+          dist_31_80_success?: number | null
+          dist_31_80_total?: number | null
+          dist_81_120_success?: number | null
+          dist_81_120_total?: number | null
+          dist_121_160_success?: number | null
+          dist_121_160_total?: number | null
+          dist_161_180_success?: number | null
+          dist_161_180_total?: number | null
+          dist_181_plus_success?: number | null
+          dist_181_plus_total?: number | null
+          created_at?: string | null
+        }
+      }
+    }
+  }
+}
+
