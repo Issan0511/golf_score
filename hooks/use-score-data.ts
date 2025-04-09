@@ -15,7 +15,10 @@ export function useScoreData() {
   })
 
   // Performance data
-  const [performanceData, setPerformanceData] = useState<Partial<Performance>>({})
+  const [performanceData, setPerformanceData] = useState<Partial<Performance>>({
+    score: undefined, // Added score field
+    putts: undefined, // Added putts field
+  })
 
   const handleRoundChange = (field: keyof Round, value: any) => {
     setRoundData((prev) => ({ ...prev, [field]: value }))
