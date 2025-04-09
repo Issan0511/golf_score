@@ -63,7 +63,7 @@ export default function SubmitScorePage() {
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold mb-2 text-golf-800">スコア入力</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          ラウンド情報とパフォーマンス詳細を入力してください。すべての情報は統計に反映されます。
+          ラウンド情報とパフォーマンスを入力してください。すべての情報は統計に反映されます。
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export default function SubmitScorePage() {
             ラウンド情報
           </TabsTrigger>
           <TabsTrigger value="performance" className="data-[state=active]:bg-golf-50 data-[state=active]:text-golf-700">
-            パフォーマンス詳細
+            パフォーマンス
           </TabsTrigger>
         </TabsList>
 
@@ -90,8 +90,8 @@ export default function SubmitScorePage() {
         <TabsContent value="performance">
           <Card className="border-0 shadow-lg overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
-              <CardTitle className="text-golf-800">パフォーマンス詳細</CardTitle>
-              <CardDescription>ラウンド中のパフォーマンス詳細を入力してください</CardDescription>
+              <CardTitle className="text-golf-800">パフォーマンス</CardTitle>
+              <CardDescription>ラウンド中のパフォーマンスを入力してください</CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
               <SectionCard title="スコアとパット数" icon={<Trophy className="h-5 w-5 text-amber-500" />}>
