@@ -175,13 +175,6 @@ function PlayerCard({
             fill
             className="object-cover"
           />
-          {stats?.handicap && (
-            <div className="absolute top-3 right-3">
-              <Badge className="bg-golf-600 hover:bg-golf-700 text-white px-2 py-1 text-xs font-semibold rounded-full">
-                HC {stats.handicap.toFixed(1)}
-              </Badge>
-            </div>
-          )}
           {gradeDisplay && (
             <div className="absolute top-3 left-3">
               <Badge className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${badgeColorClass}`}>
