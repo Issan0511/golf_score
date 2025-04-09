@@ -73,44 +73,9 @@ export default function Navbar() {
                 統計
               </NavLink>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-golf-600 hover:bg-gray-50 rounded-md"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-1" />
-                    スコア入力
-                    <ChevronDown className="h-4 w-4 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem>
-                    <a 
-                      href="/submit-score"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleMenuItemClick('/submit-score');
-                      }}
-                      className="w-full cursor-pointer"
-                    >
-                      通常入力
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <a 
-                      href="/submit-score/hole-by-hole"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleMenuItemClick('/submit-score/hole-by-hole');
-                      }}
-                      className="w-full cursor-pointer"
-                    >
-                      ホール別入力
-                    </a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <NavLink href="/submit-score" icon={<PlusCircle className="h-4 w-4 mr-1" />}>
+                スコア入力
+              </NavLink>
             </div>
           </div>
 
@@ -135,9 +100,6 @@ export default function Navbar() {
                   </MobileNavLink>
                   <MobileNavLink href="/submit-score" icon={<PlusCircle className="h-5 w-5 mr-2" />}>
                     スコア入力
-                  </MobileNavLink>
-                  <MobileNavLink href="/submit-score/hole-by-hole" icon={<PlusCircle className="h-5 w-5 mr-2" />}>
-                    ホール別入力
                   </MobileNavLink>
                 </div>
               </motion.div>

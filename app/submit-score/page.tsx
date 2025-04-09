@@ -18,6 +18,7 @@ import { SectionCard } from "@/components/ui/section-card"
 import { DistanceInputGroup } from "@/components/score/distance-input-group"
 import { useScoreData } from "@/hooks/use-score-data"
 import { RoundBasicInfoCard } from "@/components/RoundBasicInfoCard"
+import { useHoleData } from "@/hooks/use-hole-data"
 
 export default function SubmitScorePage() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -31,6 +32,15 @@ export default function SubmitScorePage() {
     handlePerformanceChange,
     handleSubmit,
   } = useScoreData()
+
+  const {
+    holes,
+    currentHole,
+    handleHoleChange,
+    goToNextHole,
+    goToPrevHole,
+    handleSubmit: handleHoleSubmit,
+  } = useHoleData()
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -72,6 +82,9 @@ export default function SubmitScorePage() {
           <TabsTrigger value="round" className="data-[state=active]:bg-golf-50 data-[state=active]:text-golf-700">
             ラウンド情報
           </TabsTrigger>
+          <TabsTrigger value="holes" className="data-[state=active]:bg-golf-50 data-[state=active]:text-golf-700">
+            ホール別入力
+          </TabsTrigger>
           <TabsTrigger value="performance" className="data-[state=active]:bg-golf-50 data-[state=active]:text-golf-700">
             パフォーマンス
           </TabsTrigger>
@@ -83,8 +96,274 @@ export default function SubmitScorePage() {
             roundData={roundData}
             players={players}
             handleRoundChange={handleRoundChange}
-            nextTab={() => document.querySelector('[data-value="performance"]')?.click()}
+            nextTab={() => document.querySelector('[data-value="holes"]')?.click()}
           />
+        </TabsContent>
+
+        <TabsContent value="holes">
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-golf-800">ホール {currentHole} の入力</CardTitle>
+                  <CardDescription>各ホールのスコアとパフォーマンスを入力してください</CardDescription>
+                </div>
+                <Badge className="bg-golf-600 text-white px-3 py-1 text-lg">{currentHole} / 18</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-6">
+                  <Button
+                    variant="outline"
+                    onClick={goToPrevHole}
+                    disabled={currentHole === 1}
+                    className="border-golf-500 text-golf-600 hover:bg-golf-50 flex items-center"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    前のホール
+                  </Button>
+                  <div className="text-center bg-golf-50 px-6 py-3 rounded-full">
+                    <div className="text-sm text-golf-700">ホール</div>
+                    <div className="text-2xl font-bold text-golf-800">{currentHole}</div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={goToNextHole}
+                    disabled={currentHole === 18}
+                    className="border-golf-500 text-golf-600 hover:bg-golf-50 flex items-center"
+                  >
+                    次のホール
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <FormField label="パー" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+                    <Select
+                      value={holes[currentHole - 1].par.toString()}
+                      onValueChange={(value) => handleHoleChange("par", Number.parseInt(value))}
+                    >
+                      <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                        <SelectValue placeholder="パーを選択" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3">3</SelectItem>
+                        <SelectItem value="4">4</SelectItem>
+                        <SelectItem value="5">5</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  <FormField label="スコア" icon={<Trophy className="h-4 w-4 text-golf-500" />}>
+                    <Input
+                      id="score"
+                      type="number"
+                      value={holes[currentHole - 1].score}
+                      onChange={(e) => handleHoleChange("score", Number.parseInt(e.target.value))}
+                      min={1}
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+
+                  <FormField label="パット数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+                    <Input
+                      id="putts"
+                      type="number"
+                      value={holes[currentHole - 1].putts}
+                      onChange={(e) => handleHoleChange("putts", Number.parseInt(e.target.value))}
+                      min={0}
+                      className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                    />
+                  </FormField>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <Checkbox
+                      id="fairwayHit"
+                      checked={holes[currentHole - 1].fairwayHit}
+                      onCheckedChange={(checked) => handleHoleChange("fairwayHit", checked)}
+                      className="text-golf-500 focus:ring-golf-500"
+                    />
+                    <Label htmlFor="fairwayHit" className="text-gray-700 cursor-pointer flex-1">
+                      フェアウェイキープ
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <Checkbox
+                      id="greenHit"
+                      checked={holes[currentHole - 1].greenHit}
+                      onCheckedChange={(checked) => handleHoleChange("greenHit", checked)}
+                      className="text-golf-500 focus:ring-golf-500"
+                    />
+                    <Label htmlFor="greenHit" className="text-gray-700 cursor-pointer flex-1">
+                      グリーンオン
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <Checkbox
+                      id="pinHit"
+                      checked={holes[currentHole - 1].pinHit}
+                      onCheckedChange={(checked) => handleHoleChange("pinHit", checked)}
+                      className="text-golf-500 focus:ring-golf-500"
+                    />
+                    <Label htmlFor="pinHit" className="text-gray-700 cursor-pointer flex-1">
+                      ピン奪取
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-8">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Checkbox
+                      id="ob"
+                      checked={holes[currentHole - 1].ob}
+                      onCheckedChange={(checked) => handleHoleChange("ob", checked)}
+                      className="text-golf-500 focus:ring-golf-500"
+                    />
+                    <Label htmlFor="ob" className="text-gray-700 font-medium cursor-pointer">
+                      OB
+                    </Label>
+                  </div>
+
+                  {holes[currentHole - 1].ob && (
+                    <div className="space-y-2 pl-6">
+                      <Label htmlFor="obType" className="text-gray-700">
+                        OBタイプ
+                      </Label>
+                      <Select
+                        value={holes[currentHole - 1].obType}
+                        onValueChange={(value) => handleHoleChange("obType", value)}
+                      >
+                        <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                          <SelectValue placeholder="OBタイプを選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1w">1W</SelectItem>
+                          <SelectItem value="2nd">セカンド</SelectItem>
+                          <SelectItem value="other">その他</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                  <h3 className="text-lg font-medium mb-4 text-golf-800 flex items-center">
+                    <Flag className="h-5 w-5 mr-2 text-golf-500" />
+                    アプローチ
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="アプローチ距離 (m)">
+                      <Input
+                        id="approachDistance"
+                        type="number"
+                        value={holes[currentHole - 1].approachDistance}
+                        onChange={(e) => handleHoleChange("approachDistance", Number.parseInt(e.target.value))}
+                        min={0}
+                        className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                      />
+                    </FormField>
+
+                    {holes[currentHole - 1].approachDistance > 0 && (
+                      <div className="flex items-center space-x-2 p-3 bg-golf-50 rounded-lg">
+                        <Checkbox
+                          id="approachSuccess"
+                          checked={holes[currentHole - 1].approachSuccess}
+                          onCheckedChange={(checked) => handleHoleChange("approachSuccess", checked)}
+                          className="text-golf-500 focus:ring-golf-500"
+                        />
+                        <Label htmlFor="approachSuccess" className="text-gray-700 cursor-pointer flex-1">
+                          アプローチ成功
+                        </Label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-medium mb-4 text-golf-800 flex items-center">
+                  <Trophy className="h-5 w-5 mr-2 text-amber-500" />
+                  ホール別スコア一覧
+                </h3>
+                <div className="grid grid-cols-9 gap-1 text-center mb-2">
+                  {Array.from({ length: 9 }, (_, i) => (
+                    <div
+                      key={i + 1}
+                      className={`p-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        currentHole === i + 1
+                          ? "bg-golf-500 text-white font-bold"
+                          : "bg-white border border-gray-200 hover:bg-golf-50"
+                      }`}
+                      onClick={() => setCurrentHole(i + 1)}
+                    >
+                      {i + 1}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-9 gap-1 text-center">
+                  {Array.from({ length: 9 }, (_, i) => (
+                    <div
+                      key={i + 10}
+                      className={`p-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        currentHole === i + 10
+                          ? "bg-golf-500 text-white font-bold"
+                          : "bg-white border border-gray-200 hover:bg-golf-50"
+                      }`}
+                      onClick={() => setCurrentHole(i + 10)}
+                    >
+                      {i + 10}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 gap-6">
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                    <div className="text-sm text-gray-500">OUT</div>
+                    <div className="text-2xl font-bold text-golf-800">
+                      {holes.slice(0, 9).reduce((sum, hole) => sum + hole.score, 0)}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                    <div className="text-sm text-gray-500">IN</div>
+                    <div className="text-2xl font-bold text-golf-800">
+                      {holes.slice(9, 18).reduce((sum, hole) => sum + hole.score, 0)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 bg-golf-50 rounded-lg p-6 text-center">
+                  <div className="text-sm text-golf-700">TOTAL</div>
+                  <div className="text-3xl font-bold text-golf-800">
+                    {holes.reduce((sum, hole) => sum + hole.score, 0)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="bg-gray-50 p-6 border-t border-gray-100 flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => document.querySelector('[data-value="round"]')?.click()}
+                className="border-golf-500 text-golf-600 hover:bg-golf-50"
+              >
+                戻る: ラウンド情報
+              </Button>
+              <Button onClick={handleHoleSubmit} disabled={submitting} className="bg-golf-600 hover:bg-golf-700 text-white">
+                {submitting ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    送信中...
+                  </>
+                ) : (
+                  "スコアを登録する"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
         </TabsContent>
 
         <TabsContent value="performance">
@@ -267,10 +546,10 @@ export default function SubmitScorePage() {
             <CardFooter className="bg-gray-50 p-6 border-t border-gray-100 flex justify-between">
               <Button
                 variant="outline"
-                onClick={() => document.querySelector('[data-value="round"]')?.click()}
+                onClick={() => document.querySelector('[data-value="holes"]')?.click()}
                 className="border-golf-500 text-golf-600 hover:bg-golf-50"
               >
-                戻る: ラウンド情報
+                戻る: ホール別入力
               </Button>
               <Button onClick={handleSubmit} disabled={submitting} className="bg-golf-600 hover:bg-golf-700 text-white">
                 {submitting ? (
@@ -289,4 +568,3 @@ export default function SubmitScorePage() {
     </div>
   )
 }
-
