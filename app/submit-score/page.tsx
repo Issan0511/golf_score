@@ -1,36 +1,36 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
-import { supabase, type Player, type Round, type Performance } from "@/lib/supabase"
+import { Label } from "@/components/ui/label"
+import { supabase, type Player } from "@/lib/supabase"
 import { Calendar, Cloud, Flag, GuitarIcon as Golf, Trophy, User, MessageSquare } from "lucide-react"
-import { toast } from "@/components/ui/use-toast"
+
+// 抽出したコンポーネントとフックをインポート
+import { FormField } from "@/components/ui/form-field"
+import { SectionCard } from "@/components/ui/section-card"
+import { DistanceInputGroup } from "@/components/score/distance-input-group"
+import { useScoreData } from "@/hooks/use-score-data"
 
 export default function SubmitScorePage() {
-  const router = useRouter()
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-
-  // Round data
-  const [roundData, setRoundData] = useState<Partial<Round>>({
-    date: new Date().toISOString().split("T")[0],
-    round_count: 1.0,
-    is_competition: false,
-  })
-
-  // Performance data
-  const [performanceData, setPerformanceData] = useState<Partial<Performance>>({})
+  
+  // useScoreDataフックを使用
+  const {
+    roundData,
+    performanceData,
+    submitting,
+    handleRoundChange,
+    handlePerformanceChange,
+    handleSubmit
+  } = useScoreData()
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -48,58 +48,6 @@ export default function SubmitScorePage() {
 
     fetchPlayers()
   }, [])
-
-  const handleRoundChange = (field: keyof Round, value: any) => {
-    setRoundData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handlePerformanceChange = (field: keyof Performance, value: any) => {
-    setPerformanceData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleSubmit = async () => {
-    if (!roundData.player_id || !roundData.date || !roundData.course_name) {
-      toast({
-        title: "入力エラー",
-        description: "プレイヤー、日付、コース名は必須です",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setSubmitting(true)
-
-    try {
-      // Insert round data
-      const { data: roundResult, error: roundError } = await supabase.from("rounds").insert(roundData).select().single()
-
-      if (roundError) throw roundError
-
-      // Insert performance data with the round ID
-      const { error: perfError } = await supabase.from("performance").insert({
-        id: roundResult.id,
-        ...performanceData,
-      })
-
-      if (perfError) throw perfError
-
-      toast({
-        title: "登録完了",
-        description: "スコアが正常に登録されました",
-        variant: "default",
-      })
-      router.push(`/player/${roundData.player_id}`)
-    } catch (error) {
-      console.error("Error submitting score:", error)
-      toast({
-        title: "エラー",
-        description: "スコア登録中にエラーが発生しました",
-        variant: "destructive",
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -505,105 +453,6 @@ export default function SubmitScorePage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  )
-}
-
-function FormField({
-  label,
-  children,
-  icon,
-}: {
-  label: string
-  children: React.ReactNode
-  icon?: React.ReactNode
-}) {
-  return (
-    <div className="space-y-2">
-      <Label className="flex items-center text-gray-700">
-        {icon && <span className="mr-2">{icon}</span>}
-        {label}
-      </Label>
-      {children}
-    </div>
-  )
-}
-
-function SectionCard({
-  title,
-  children,
-  icon,
-}: {
-  title: string
-  children: React.ReactNode
-  icon?: React.ReactNode
-}) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="flex items-center p-4 bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
-        {icon}
-        <h3 className="text-lg font-medium ml-2 text-golf-800">{title}</h3>
-      </div>
-      <div className="p-6">{children}</div>
-    </div>
-  )
-}
-
-function DistanceInputGroup({
-  title,
-  successValue,
-  totalValue,
-  onSuccessChange,
-  onTotalChange,
-}: {
-  title: string
-  successValue?: number
-  totalValue?: number
-  onSuccessChange: (value: number) => void
-  onTotalChange: (value: number) => void
-}) {
-  const successRate = totalValue && totalValue > 0 && successValue !== undefined ? (successValue / totalValue) * 100 : 0
-
-  return (
-    <div className="mb-6 last:mb-0">
-      <div className="flex items-center mb-3">
-        <h4 className="text-md font-medium text-gray-700">{title}</h4>
-        {totalValue && totalValue > 0 && successValue !== undefined && (
-          <div className="ml-auto">
-            <span className="text-sm font-medium px-2 py-1 bg-golf-50 text-golf-700 rounded-full">
-              {successRate.toFixed(1)}%
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField label="成功数">
-          <Input
-            type="number"
-            value={successValue || ""}
-            onChange={(e) => onSuccessChange(Number.parseInt(e.target.value))}
-            placeholder="例: 3"
-            className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-          />
-        </FormField>
-        <FormField label="総数">
-          <Input
-            type="number"
-            value={totalValue || ""}
-            onChange={(e) => onTotalChange(Number.parseInt(e.target.value))}
-            placeholder="例: 5"
-            className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-          />
-        </FormField>
-      </div>
-      {totalValue && totalValue > 0 && (
-        <div className="mt-2 w-full bg-gray-100 rounded-full h-2">
-          <div
-            className="bg-golf-500 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${successRate}%` }}
-          ></div>
-        </div>
-      )}
     </div>
   )
 }
