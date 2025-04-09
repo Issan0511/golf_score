@@ -11,14 +11,20 @@ import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
 import { LoadingModal } from "@/components/ui/loading-modal"
 
 async function getPlayers() {
-  const { data, error } = await supabase.from("players").select("*").order("name")
+  try {
+    const { data, error } = await supabase.from("players").select("*").order("name")
 
-  if (error) {
-    console.error("Error fetching players:", error)
+    if (error) {
+      console.error("Error fetching players:", error)
+      console.error("Error details:", JSON.stringify(error))
+      return []
+    }
+
+    return data as Player[]
+  } catch (e) {
+    console.error("Exception fetching players:", e)
     return []
   }
-
-  return data as Player[]
 }
 
 async function getPlayerStats(playerId: string) {
