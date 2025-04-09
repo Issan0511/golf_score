@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { supabase, type Player } from "@/lib/supabase"
-import { Calendar, Cloud, Flag, GuitarIcon as Golf, Trophy, User, MessageSquare } from "lucide-react"
+import { Calendar, Cloud, Flag, GuitarIcon as Golf, Trophy, User, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 // 抽出したコンポーネントとフックをインポート
 import { FormField } from "@/components/ui/form-field"
