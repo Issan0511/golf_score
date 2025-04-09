@@ -6,7 +6,6 @@ import { ArrowUpDown, Trophy } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { PlayerWithStats } from "@/types/player-stats"
 import { BasicStatsTable } from "@/components/player-stats/basic-stats-table"
-import { PerformanceTable } from "@/components/player-stats/performance-table"
 import { DistanceStatsTable } from "@/components/player-stats/distance-stats-table"
 import { StatsFilter } from "@/components/player-stats/stats-filter"
 
@@ -140,46 +139,25 @@ export default function PlayerStatsPage() {
           <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
             <CardTitle className="text-golf-800 flex items-center">
               <ArrowUpDown className="h-5 w-5 mr-2 text-golf-500" />
-              統計一覧
+              {showAllStats ? "距離帯別成功率" : "統計一覧"}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <BasicStatsTable
-              players={sortedPlayers}
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSort={handleSort}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 全詳細項目を表示するセクション - showAllStats=trueの時のみ表示 */}
-      {!loading && showAllStats && (
-        <Card className="border-0 shadow-lg overflow-hidden mt-8">
-          <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
-            <CardTitle className="text-golf-800 flex items-center">
-              <ArrowUpDown className="h-5 w-5 mr-2 text-golf-500" />
-              パフォーマンス詳細
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <PerformanceTable players={sortedPlayers} />
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* 距離帯別成功率のテーブル - showAllStats=trueの時のみ表示 */}
-      {!loading && showAllStats && (
-        <Card className="border-0 shadow-lg overflow-hidden mt-8">
-          <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
-            <CardTitle className="text-golf-800 flex items-center">
-              <Trophy className="h-5 w-5 mr-2 text-amber-500" />
-              距離帯別成功率
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DistanceStatsTable players={sortedPlayers} />
+            {showAllStats ? (
+              <DistanceStatsTable
+                players={sortedPlayers}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+              />
+            ) : (
+              <BasicStatsTable
+                players={sortedPlayers}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+              />
+            )}
           </CardContent>
         </Card>
       )}

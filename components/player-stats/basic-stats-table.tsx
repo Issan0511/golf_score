@@ -24,12 +24,6 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
               名前 {sortField === "name" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
             <TableHead
-              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600"
-              onClick={() => onSort("department")}
-            >
-              学部 {sortField === "department" && (sortDirection === "asc" ? "↑" : "↓")}
-            </TableHead>
-            <TableHead
               className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
               onClick={() => onSort("avg_score")}
             >
@@ -47,6 +41,51 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                 平均パット {sortField === "avg_putt" && (sortDirection === "asc" ? "↑" : "↓")}
               </div>
             </TableHead>
+            
+            {/* Performance Table から統合 - 1パット */}
+            <TableHead
+              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
+              onClick={() => onSort("avg_one_putts")}
+            >
+              <div className="flex items-center justify-end">
+                <Golf className="h-4 w-4 mr-1 text-blue-500" />
+                1パット {sortField === "avg_one_putts" && (sortDirection === "asc" ? "↑" : "↓")}
+              </div>
+            </TableHead>
+            
+            {/* Performance Table から統合 - 3パット+ */}
+            <TableHead
+              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
+              onClick={() => onSort("avg_three_putts_or_more")}
+            >
+              <div className="flex items-center justify-end">
+                <Golf className="h-4 w-4 mr-1 text-blue-500" />
+                3パット+ {sortField === "avg_three_putts_or_more" && (sortDirection === "asc" ? "↑" : "↓")}
+              </div>
+            </TableHead>
+            
+            {/* Performance Table から統合 - パーオン率 */}
+            <TableHead
+              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
+              onClick={() => onSort("avg_par_on")}
+            >
+              <div className="flex items-center justify-end">
+                <Flag className="h-4 w-4 mr-1 text-green-500" />
+                パーオン率 {sortField === "avg_par_on" && (sortDirection === "asc" ? "↑" : "↓")}
+              </div>
+            </TableHead>
+            
+            {/* Performance Table から統合 - ボギーオン率 */}
+            <TableHead
+              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
+              onClick={() => onSort("avg_bogey_on")}
+            >
+              <div className="flex items-center justify-end">
+                <Flag className="h-4 w-4 mr-1 text-green-500" />
+                ボギーオン率 {sortField === "avg_bogey_on" && (sortDirection === "asc" ? "↑" : "↓")}
+              </div>
+            </TableHead>
+            
             <TableHead
               className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
               onClick={() => onSort("pin_rate")}
@@ -78,7 +117,6 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                   {player.name}
                 </Link>
               </TableCell>
-              <TableCell className="text-gray-600">{player.department || "-"}</TableCell>
               <TableCell className="text-right font-medium">
                 {player.stats?.avg_score !== undefined && player.stats?.avg_score !== null ? (
                   <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
@@ -97,6 +135,51 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                   "-"
                 )}
               </TableCell>
+              
+              {/* Performance Table から統合 - 1パット */}
+              <TableCell className="text-right font-medium">
+                {player.stats?.avg_one_putts != null ? (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    {player.stats.avg_one_putts.toFixed(1)}
+                  </Badge>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+              
+              {/* Performance Table から統合 - 3パット+ */}
+              <TableCell className="text-right font-medium">
+                {player.stats?.avg_three_putts_or_more != null ? (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    {player.stats.avg_three_putts_or_more.toFixed(1)}
+                  </Badge>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+              
+              {/* Performance Table から統合 - パーオン率 */}
+              <TableCell className="text-right font-medium">
+                {player.stats?.avg_par_on != null ? (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    {player.stats.avg_par_on.toFixed(1)}%
+                  </Badge>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+              
+              {/* Performance Table から統合 - ボギーオン率 */}
+              <TableCell className="text-right font-medium">
+                {player.stats?.avg_bogey_on != null ? (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    {player.stats.avg_bogey_on.toFixed(1)}%
+                  </Badge>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+              
               <TableCell className="text-right font-medium">
                 {player.stats?.pin_rate !== undefined && player.stats?.pin_rate !== null ? (
                   <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">

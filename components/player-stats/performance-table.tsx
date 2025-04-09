@@ -57,18 +57,7 @@ export function PerformanceTable({ players }: PerformanceTableProps) {
                 OB(1W)
               </div>
             </TableHead>
-            <TableHead className="font-semibold text-gray-700 text-right">
-              <div className="flex items-center justify-end">
-                <Cloud className="h-4 w-4 mr-1 text-gray-500" />
-                OB(2打目)
-              </div>
-            </TableHead>
-            <TableHead className="font-semibold text-gray-700 text-right">
-              <div className="flex items-center justify-end">
-                <Cloud className="h-4 w-4 mr-1 text-gray-500" />
-                OB(その他)
-              </div>
-            </TableHead>
+
           </TableRow>
         </TableHeader>
         <TableBody>

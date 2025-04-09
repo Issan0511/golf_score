@@ -1,6 +1,5 @@
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface StatsFilterProps {
   searchTerm: string
@@ -28,37 +27,11 @@ export function StatsFilter({
       <div className="flex-1 relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         <Input
-          placeholder="プレイヤー名または学部で検索..."
+          placeholder="プレイヤー名で検索..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10 border-gray-200 focus:border-golf-500 focus:ring-golf-500"
         />
-      </div>
-      <div className="w-full md:w-64">
-        <Select value={sortField} onValueChange={setSortField}>
-          <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-            <SelectValue placeholder="並び替え項目" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">名前</SelectItem>
-            <SelectItem value="department">学部</SelectItem>
-            <SelectItem value="avg_score">平均スコア</SelectItem>
-            <SelectItem value="handicap">ハンディキャップ</SelectItem>
-            <SelectItem value="avg_putt">平均パット数</SelectItem>
-            <SelectItem value="pin_rate">ピン率</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="w-full md:w-64">
-        <Select value={sortDirection} onValueChange={(value) => setSortDirection(value as "asc" | "desc")}>
-          <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-            <SelectValue placeholder="並び順" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">昇順</SelectItem>
-            <SelectItem value="desc">降順</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
       <div className="w-full md:w-64">
         <button 
@@ -69,7 +42,7 @@ export function StatsFilter({
             : "bg-white text-golf-600 border-golf-600 hover:bg-golf-50"
           }`}
         >
-          {showAllStats ? "基本項目のみ表示" : "全ての項目を表示"}
+          {showAllStats ? "基本項目を表示" : "距離帯別成功率を表示"}
         </button>
       </div>
     </div>
