@@ -62,22 +62,32 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
             />
           </FormField>
 
-          <FormField label="コース名" icon={<Flag className="h-4 w-4 text-golf-500" />}>
-            <Input
-              id="course_name"
-              value={roundData.course_name || ""}
-              onChange={(e) => handleRoundChange("course_name", e.target.value)}
-              placeholder="例: 霞ヶ関カンツリー倶楽部"
-              className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-            />
-          </FormField>
-
-          <FormField label="クラブ名（オプション）" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+          <FormField label="クラブ名" icon={<Golf className="h-4 w-4 text-golf-500" />}>
             <Input
               id="club_name"
               value={roundData.club_name || ""}
               onChange={(e) => handleRoundChange("club_name", e.target.value)}
-              placeholder="例: 東京大学ゴルフ部"
+              placeholder="日野ゴルフクラブ"
+              className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+            />
+          </FormField>
+
+          <FormField label="コース名（オプション）" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+            <Input
+              id="course_name"
+              value={roundData.course_name || ""}
+              onChange={(e) => handleRoundChange("course_name", e.target.value)}
+              placeholder="例: クイーンIN-OUT"
+              className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+            />
+          </FormField>
+
+          <FormField label="使用ティー" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+            <Input
+              id="used_tee"
+              value={roundData.used_tee || ""}
+              onChange={(e) => handleRoundChange("used_tee", e.target.value)}
+              placeholder="例: バックティー"
               className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
             />
           </FormField>

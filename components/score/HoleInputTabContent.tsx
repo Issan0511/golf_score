@@ -90,8 +90,8 @@ export function HoleInputTabContent({
     
     const field = successFieldMap[shortestDistance as keyof typeof successFieldMap];
     if (field) {
-      const currentValue = holes[currentHole - 1][field as keyof typeof holes[0]] as number || 0;
-      handleHoleChange(field, currentValue + 1);
+      const currentValue = holes[currentHole - 1][field as keyof typeof holes[0]] as number;
+      handleHoleChange(field, (currentValue !== undefined ? currentValue : 0) + 1);
     }
   }
 
@@ -100,12 +100,12 @@ export function HoleInputTabContent({
     const hole = holes[currentHole - 1];
     
     switch (distance) {
-      case 30: return hole.shotsuccess30 || 0;
-      case 80: return hole.shotsuccess80 || 0;
-      case 120: return hole.shotsuccess120 || 0;
-      case 160: return hole.shotsuccess160 || 0;
-      case 180: return hole.shotsuccess180 || 0;
-      case 181: return hole.shotsuccess181plus || 0;
+      case 30: return hole.shotsuccess30 !== undefined ? hole.shotsuccess30 : 0;
+      case 80: return hole.shotsuccess80 !== undefined ? hole.shotsuccess80 : 0;
+      case 120: return hole.shotsuccess120 !== undefined ? hole.shotsuccess120 : 0;
+      case 160: return hole.shotsuccess160 !== undefined ? hole.shotsuccess160 : 0;
+      case 180: return hole.shotsuccess180 !== undefined ? hole.shotsuccess180 : 0;
+      case 181: return hole.shotsuccess181plus !== undefined ? hole.shotsuccess181plus : 0;
       default: return 0;
     }
   }
@@ -255,7 +255,7 @@ export function HoleInputTabContent({
                 <Input
                   id="ob1w"
                   type="number"
-                  value={holes[currentHole - 1].ob1w || 0}
+                  value={holes[currentHole - 1].ob1w !== undefined ? holes[currentHole - 1].ob1w : 0}
                   onChange={(e) => handleHoleChange("ob1w", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -265,7 +265,7 @@ export function HoleInputTabContent({
                 <Input
                   id="obOther"
                   type="number"
-                  value={holes[currentHole - 1].obOther || 0}
+                  value={holes[currentHole - 1].obOther !== undefined ? holes[currentHole - 1].obOther : 0}
                   onChange={(e) => handleHoleChange("obOther", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -284,7 +284,7 @@ export function HoleInputTabContent({
                 <Input
                   id="shotCount30"
                   type="number"
-                  value={holes[currentHole - 1].shotCount30 || 0}
+                  value={holes[currentHole - 1].shotCount30 !== undefined ? holes[currentHole - 1].shotCount30 : 0}
                   onChange={(e) => handleShotCountChange("shotCount30", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -296,7 +296,7 @@ export function HoleInputTabContent({
                 <Input
                   id="shotCount80"
                   type="number"
-                  value={holes[currentHole - 1].shotCount80 || 0}
+                  value={holes[currentHole - 1].shotCount80 !== undefined ? holes[currentHole - 1].shotCount80 : 0}
                   onChange={(e) => handleShotCountChange("shotCount80", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -308,7 +308,7 @@ export function HoleInputTabContent({
                 <Input
                   id="shotCount120"
                   type="number"
-                  value={holes[currentHole - 1].shotCount120 || 0}
+                  value={holes[currentHole - 1].shotCount120 !== undefined ? holes[currentHole - 1].shotCount120 : 0}
                   onChange={(e) => handleShotCountChange("shotCount120", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -320,7 +320,7 @@ export function HoleInputTabContent({
                 <Input
                   id="shotCount160"
                   type="number"
-                  value={holes[currentHole - 1].shotCount160 || 0}
+                  value={holes[currentHole - 1].shotCount160 !== undefined ? holes[currentHole - 1].shotCount160 : 0}
                   onChange={(e) => handleShotCountChange("shotCount160", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -332,7 +332,7 @@ export function HoleInputTabContent({
                 <Input
                   id="shotCount180"
                   type="number"
-                  value={holes[currentHole - 1].shotCount180 || 0}
+                  value={holes[currentHole - 1].shotCount180 !== undefined ? holes[currentHole - 1].shotCount180 : 0}
                   onChange={(e) => handleShotCountChange("shotCount180", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -344,7 +344,7 @@ export function HoleInputTabContent({
                 <Input
                   id="shotCount181plus"
                   type="number"
-                  value={holes[currentHole - 1].shotCount181plus || 0}
+                  value={holes[currentHole - 1].shotCount181plus !== undefined ? holes[currentHole - 1].shotCount181plus : 0}
                   onChange={(e) => handleShotCountChange("shotCount181plus", Number.parseInt(e.target.value))}
                   min={0}
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"

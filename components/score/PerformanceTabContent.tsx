@@ -26,41 +26,16 @@ export function PerformanceTabContent({
     <Card className="border-0 shadow-lg overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
         <CardTitle className="text-golf-800">パフォーマンス</CardTitle>
-        <CardDescription>ラウンド中のパフォーマンスを入力してください</CardDescription>
+        <CardDescription>ラウンド中のパフォーマンスデータを確認して登録してください</CardDescription>
       </CardHeader>
       <CardContent className="p-6 space-y-8">
-        <SectionCard title="スコアとパット数" icon={<Trophy className="h-5 w-5 text-amber-500" />}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField label="トータルスコア">
-              <Input
-                id="total_score"
-                type="number"
-                value={performanceData.total_score || ""}
-                onChange={(e) => handlePerformanceChange("total_score", Number.parseInt(e.target.value))}
-                placeholder="例: 85"
-                className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-              />
-            </FormField>
-            <FormField label="パット数">
-              <Input
-                id="total_putts"
-                type="number"
-                value={performanceData.total_putts || ""}
-                onChange={(e) => handlePerformanceChange("total_putts", Number.parseInt(e.target.value))}
-                placeholder="例: 32"
-                className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-              />
-            </FormField>
-          </div>
-        </SectionCard>
-
         <SectionCard title="パット" icon={<Golf className="h-5 w-5 text-blue-500" />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField label="1パット数">
               <Input
                 id="one_putts"
                 type="number"
-                value={performanceData.one_putts || ""}
+                value={performanceData.one_putts !== undefined ? performanceData.one_putts : ""}
                 onChange={(e) => handlePerformanceChange("one_putts", Number.parseInt(e.target.value))}
                 placeholder="例: 5"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -70,7 +45,7 @@ export function PerformanceTabContent({
               <Input
                 id="three_putts_or_more"
                 type="number"
-                value={performanceData.three_putts_or_more || ""}
+                value={performanceData.three_putts_or_more !== undefined ? performanceData.three_putts_or_more : ""}
                 onChange={(e) => handlePerformanceChange("three_putts_or_more", Number.parseInt(e.target.value))}
                 placeholder="例: 2"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -85,7 +60,7 @@ export function PerformanceTabContent({
               <Input
                 id="par_on"
                 type="number"
-                value={performanceData.par_on || ""}
+                value={performanceData.par_on !== undefined ? performanceData.par_on : ""}
                 onChange={(e) => handlePerformanceChange("par_on", Number.parseInt(e.target.value))}
                 placeholder="例: 8"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -95,7 +70,7 @@ export function PerformanceTabContent({
               <Input
                 id="bogey_on"
                 type="number"
-                value={performanceData.bogey_on || ""}
+                value={performanceData.bogey_on !== undefined ? performanceData.bogey_on : ""}
                 onChange={(e) => handlePerformanceChange("bogey_on", Number.parseInt(e.target.value))}
                 placeholder="例: 6"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -105,7 +80,7 @@ export function PerformanceTabContent({
               <Input
                 id="in_pin"
                 type="number"
-                value={performanceData.in_pin || ""}
+                value={performanceData.in_pin !== undefined ? performanceData.in_pin : ""}
                 onChange={(e) => handlePerformanceChange("in_pin", Number.parseInt(e.target.value))}
                 placeholder="例: 4"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -120,7 +95,7 @@ export function PerformanceTabContent({
               <Input
                 id="ob_1w"
                 type="number"
-                value={performanceData.ob_1w || ""}
+                value={performanceData.ob_1w !== undefined ? performanceData.ob_1w : ""}
                 onChange={(e) => handlePerformanceChange("ob_1w", Number.parseInt(e.target.value))}
                 placeholder="例: 1"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -130,7 +105,7 @@ export function PerformanceTabContent({
               <Input
                 id="ob_other"
                 type="number"
-                value={performanceData.ob_other || ""}
+                value={performanceData.ob_other !== undefined ? performanceData.ob_other : ""}
                 onChange={(e) => handlePerformanceChange("ob_other", Number.parseInt(e.target.value))}
                 placeholder="例: 0"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -140,7 +115,7 @@ export function PerformanceTabContent({
               <Input
                 id="ob_2nd"
                 type="number"
-                value={performanceData.ob_2nd || ""}
+                value={performanceData.ob_2nd !== undefined ? performanceData.ob_2nd : ""}
                 onChange={(e) => handlePerformanceChange("ob_2nd", Number.parseInt(e.target.value))}
                 placeholder="例: 0"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"

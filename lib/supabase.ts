@@ -15,6 +15,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export type Player = Database["public"]["Tables"]["players"]["Row"];
 export type PlayerStats = Database["public"]["Tables"]["playerstats"]["Row"];
-export type Rounds = Database["public"]["Tables"]["rounds"]["Row"];
-export type Performance = Database["public"]["Tables"]["performance"]["Row"]; // 正しいテーブル参照に修正
+export type Round = Database["public"]["Tables"]["rounds"]["Row"];
+export type Performance = Database["public"]["Tables"]["performance"]["Row"];
 

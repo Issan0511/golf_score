@@ -40,8 +40,6 @@ export default function SubmitScorePage() {
   // ホールデータからパフォーマンスデータを計算する関数
   const calculatePerformanceFromHoles = () => {
     const performance = {
-      total_score: 0,        // 合計スコア
-      total_putts: 0,        // 合計パット数
       one_putts: 0,
       three_putts_or_more: 0,
       par_on: 0,
@@ -64,11 +62,23 @@ export default function SubmitScorePage() {
       dist_181_plus_total: 0,
     }
 
+    let totalScore = 0;
+    let totalPutts = 0;
+    let frontNineScore = 0;
+    let backNineScore = 0;
+
     // ホールデータを集計
-    holes.forEach((hole) => {
+    holes.forEach((hole, index) => {
       // スコアとパット数の合計を計算
-      performance.total_score += hole.score || 0;
-      performance.total_putts += hole.putts || 0;
+      totalScore += hole.score || 0;
+      totalPutts += hole.putts || 0;
+      
+      // フロント9（1-9ホール）とバック9（10-18ホール）のスコアを計算
+      if (index < 9) {
+        frontNineScore += hole.score || 0;
+      } else {
+        backNineScore += hole.score || 0;
+      }
       
       // パット
       if (hole.putts === 1) {
@@ -92,8 +102,9 @@ export default function SubmitScorePage() {
       }
 
       // OBカウント
-      performance.ob_1w += hole.ob1w;
-      performance.ob_other += hole.obOther;
+      performance.ob_1w += hole.ob1w || 0;
+      performance.ob_other += hole.obOther || 0;
+      performance.ob_2nd += hole.ob2nd || 0;
     });
 
     // 距離ごとの成功率集計
@@ -123,6 +134,12 @@ export default function SubmitScorePage() {
       performance.dist_181_plus_success += hole.shotsuccess181plus;
     });
 
+    // roundDataにスコア合計とパット数を反映
+    handleRoundChange("score_total", totalScore);
+    handleRoundChange("putts", totalPutts);
+    handleRoundChange("score_out", frontNineScore);
+    handleRoundChange("score_in", backNineScore);
+
     return performance;
   };
 
@@ -134,7 +151,7 @@ export default function SubmitScorePage() {
     
     // パフォーマンスデータを更新
     Object.keys(calculatedPerformance).forEach(key => {
-      handlePerformanceChange(key, calculatedPerformance[key]);
+      handlePerformanceChange(key as keyof typeof calculatedPerformance, calculatedPerformance[key as keyof typeof calculatedPerformance]);
     });
     console.log("パフォーマンスデータの更新完了");
   };

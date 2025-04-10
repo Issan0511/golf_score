@@ -40,7 +40,7 @@ export const DistanceInputGroup = ({
   }, [onTotalChange]);
 
   // 成功率の表示条件
-  const showSuccessRate = Boolean(totalValue && totalValue > 0 && successValue !== undefined);
+  const showSuccessRate = Boolean(totalValue && totalValue >= 0 && successValue !== undefined);
   
   return (
     <div className="mb-6 last:mb-0">

@@ -16,8 +16,26 @@ export function useScoreData() {
 
   // Performance data
   const [performanceData, setPerformanceData] = useState<Partial<Performance>>({
-    score: undefined, // Added score field
-    putts: undefined, // Added putts field
+    one_putts: 0,
+    three_putts_or_more: 0,
+    par_on: 0,
+    bogey_on: 0,
+    in_pin: 0,
+    ob_1w: 0,
+    ob_other: 0,
+    ob_2nd: 0,
+    dist_1_30_success: 0,
+    dist_1_30_total: 0,
+    dist_31_80_success: 0,
+    dist_31_80_total: 0,
+    dist_81_120_success: 0,
+    dist_81_120_total: 0,
+    dist_121_160_success: 0,
+    dist_121_160_total: 0,
+    dist_161_180_success: 0,
+    dist_161_180_total: 0,
+    dist_181_plus_success: 0,
+    dist_181_plus_total: 0,
   })
 
   const handleRoundChange = (field: keyof Round, value: any) => {
@@ -29,6 +47,11 @@ export function useScoreData() {
   }
 
   const handleSubmit = async () => {
+    // すでに送信中の場合は処理をスキップ（二重送信防止）
+    if (submitting) {
+      return
+    }
+
     if (!roundData.player_id || !roundData.date || !roundData.course_name) {
       toast({
         title: "入力エラー",
@@ -59,6 +82,8 @@ export function useScoreData() {
         description: "スコアが正常に登録されました",
         variant: "default",
       })
+      
+      // プレイヤー詳細ページに遷移する
       router.push(`/player/${roundData.player_id}`)
     } catch (error) {
       console.error("Error submitting score:", error)
