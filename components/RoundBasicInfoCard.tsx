@@ -9,12 +9,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/ui/form-field";
+import { type Round } from "@/lib/supabase";
 
 interface RoundBasicInfoCardProps {
   mode: "basic" | "score";
-  roundData: any; // 利用している型に合わせて型定義を行ってください
+  roundData: Partial<Round>;
   players: { id: string; name: string }[];
-  handleRoundChange: (field: string, value: any) => void;
+  handleRoundChange: (field: keyof Round, value: any) => void;
   nextTab: () => void;
 }
 
@@ -38,7 +39,10 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
       <CardContent className="p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="プレイヤー" icon={<User className="h-4 w-4 text-golf-500" />}>
-            <Select value={roundData.player_id} onValueChange={(value) => handleRoundChange("player_id", value)}>
+            <Select 
+              value={roundData.player_id || ""} 
+              onValueChange={(value) => handleRoundChange("player_id", value)}
+            >
               <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
                 <SelectValue placeholder="プレイヤーを選択" />
               </SelectTrigger>
@@ -56,7 +60,7 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
             <Input
               id="date"
               type="date"
-              value={roundData.date}
+              value={roundData.date || ""}
               onChange={(e) => handleRoundChange("date", e.target.value)}
               className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
             />
@@ -92,26 +96,21 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
             />
           </FormField>
 
-          {mode === "score" && (
-            <>
-              <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
-                <Select
-                  value={roundData.round_count?.toString()}
-                  onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
-                >
-                  <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-                    <SelectValue placeholder="ラウンド数を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
-                    <SelectItem value="1.0">1.0（1ラウンド）</SelectItem>
-                    <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
-                    <SelectItem value="2.0">2.0（2ラウンド）</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-            </>
-          )}
+          <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+            <Select
+              value={roundData.round_count?.toString() || "1"}
+              onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
+            >
+              <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                <SelectValue placeholder="ラウンド数を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
+                <SelectItem value="1">1.0（1ラウンド）</SelectItem>
+                <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
 
           <FormField label="天気" icon={<Cloud className="h-4 w-4 text-golf-500" />}>
             <Select value={roundData.weather || ""} onValueChange={(value) => handleRoundChange("weather", value)}>
