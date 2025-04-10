@@ -12,6 +12,10 @@ export function useScoreData() {
     date: new Date().toISOString().split("T")[0],
     round_count: 1.0,
     is_competition: false,
+    course_name: null,
+    used_tee: null,
+    score_in: null,
+    score_out: null,
   })
 
   // Performance data

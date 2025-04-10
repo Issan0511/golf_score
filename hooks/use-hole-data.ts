@@ -58,16 +58,26 @@ export function useHoleData() {
     date: new Date().toISOString().split("T")[0],
     round_count: 1.0,
     is_competition: false,
+    course_name: null,
+    used_tee: null,
+    score_in: null,
+    score_out: null,
   })
 
   // Hole data
-  const [holes, setHoles] = useState<HoleData[]>(
-    Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 })),
-  )
+  const [holes, setHoles] = useState<HoleData[]>([])
   const [currentHole, setCurrentHole] = useState(1)
+
+  const initializeHoles = (roundCount: number) => {
+    const totalHoles = Math.ceil(roundCount * 18)
+    setHoles(Array.from({ length: totalHoles }, (_, i) => ({ ...defaultHoleData, number: i + 1 })))
+  }
 
   const handleRoundChange = (field: keyof Round, value: any) => {
     setRoundData((prev) => ({ ...prev, [field]: value }))
+    if (field === "round_count") {
+      initializeHoles(value)
+    }
   }
 
   const handleHoleChange = (field: string, value: any) => {
@@ -104,7 +114,7 @@ export function useHoleData() {
   }
 
   const goToNextHole = () => {
-    if (currentHole < 18) {
+    if (currentHole < holes.length) {
       setCurrentHole(currentHole + 1)
     }
   }

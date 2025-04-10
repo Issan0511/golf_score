@@ -161,7 +161,7 @@ export function HoleInputTabContent({
             <CardTitle className="text-golf-800">ホール {currentHole} の入力</CardTitle>
             <CardDescription>各ホールのスコアとパフォーマンスを入力してください</CardDescription>
           </div>
-          <Badge className="bg-golf-600 text-white px-3 py-1 text-lg">{currentHole} / 18</Badge>
+          <Badge className="bg-golf-600 text-white px-3 py-1 text-lg">{currentHole} / {holes.length}</Badge>
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -183,7 +183,7 @@ export function HoleInputTabContent({
             <Button
               variant="outline"
               onClick={goToNextHole}
-              disabled={currentHole === 18}
+              disabled={currentHole === holes.length}
               className="border-golf-500 text-golf-600 hover:bg-golf-50 flex items-center"
             >
               次のホール
