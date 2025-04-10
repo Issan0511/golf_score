@@ -1,5 +1,5 @@
 // components/RoundBasicInfoCard.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Calendar, Cloud, Flag, GuitarIcon as Golf, Trophy, User, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ interface RoundBasicInfoCardProps {
   roundData: any; // 利用している型に合わせて型定義を行ってください
   players: { id: string; name: string }[];
   handleRoundChange: (field: string, value: any) => void;
+  onRoundCountChange?: (value: string) => void; // ラウンド数変更専用ハンドラー
   nextTab: () => void;
 }
 
@@ -23,8 +24,33 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
   roundData,
   players,
   handleRoundChange,
+  onRoundCountChange,
   nextTab,
 }) => {
+  // コンポーネントがマウントされたときに実行
+  useEffect(() => {
+    console.log("RoundBasicInfoCard マウント時のroundData:", roundData);
+  }, []);
+
+  // ラウンド数変更ハンドラー
+  const handleRoundCountChange = (value: string) => {
+    console.log("RoundBasicInfoCard: ラウンド数変更", value);
+    if (onRoundCountChange) {
+      onRoundCountChange(value);
+    } else {
+      handleRoundChange("round_count", Number.parseFloat(value));
+    }
+  };
+
+  // ラウンド数の値を文字列に変換する関数
+  const getRoundCountValue = () => {
+    if (roundData.round_count === undefined || roundData.round_count === null) {
+      return "1.0"; // デフォルト値
+    }
+    // 数値型として確実に持っているように変換
+    return roundData.round_count.toString();
+  };
+
   return (
     <Card className="border-0 shadow-lg overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
@@ -92,26 +118,22 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
             />
           </FormField>
 
-          {mode === "score" && (
-            <>
-              <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
-                <Select
-                  value={roundData.round_count?.toString()}
-                  onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
-                >
-                  <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-                    <SelectValue placeholder="ラウンド数を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
-                    <SelectItem value="1.0">1.0（1ラウンド）</SelectItem>
-                    <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
-                    <SelectItem value="2.0">2.0（2ラウンド）</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-            </>
-          )}
+          <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+            <Select
+              value={getRoundCountValue()}
+              onValueChange={handleRoundCountChange}
+            >
+              <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                <SelectValue placeholder="ラウンド数を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
+                <SelectItem value="1.0">1.0（1ラウンド）</SelectItem>
+                <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
+                <SelectItem value="2.0">2.0（2ラウンド）</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
 
           <FormField label="天気" icon={<Cloud className="h-4 w-4 text-golf-500" />}>
             <Select value={roundData.weather || ""} onValueChange={(value) => handleRoundChange("weather", value)}>

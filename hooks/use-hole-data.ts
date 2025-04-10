@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { supabase, type Round, type Performance } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
@@ -64,14 +64,21 @@ export function useHoleData() {
     score_out: null,
   })
 
-  // Hole data
-  const [holes, setHoles] = useState<HoleData[]>([])
+  // デフォルトで18ホール分のデータを初期化
+  const [holes, setHoles] = useState<HoleData[]>(
+    Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 }))
+  )
   const [currentHole, setCurrentHole] = useState(1)
 
   const initializeHoles = (roundCount: number) => {
     const totalHoles = Math.ceil(roundCount * 18)
     setHoles(Array.from({ length: totalHoles }, (_, i) => ({ ...defaultHoleData, number: i + 1 })))
   }
+
+  // コンポーネントのマウント時に1ラウンド分（18ホール）を初期化
+  useEffect(() => {
+    initializeHoles(roundData.round_count || 1.0)
+  }, [])
 
   const handleRoundChange = (field: keyof Round, value: any) => {
     setRoundData((prev) => ({ ...prev, [field]: value }))
