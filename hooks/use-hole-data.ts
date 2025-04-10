@@ -9,12 +9,21 @@ type HoleData = {
   score: number
   putts: number
   fairwayHit: boolean
-  greenHit: boolean
+  ob1w: number
+  obOther: number
+  shotCount30: number
+  shotCount80: number
+  shotCount120: number
+  shotCount160: number
+  shotCount180: number
+  shotCount181plus: number
+  shotsuccess30: number
+  shotsuccess80: number
+  shotsuccess120: number
+  shotsuccess160: number
+  shotsuccess180: number
+  shotsuccess181plus: number
   pinHit: boolean
-  ob: boolean
-  obType: string
-  approachDistance: number
-  approachSuccess: boolean
 }
 
 const defaultHoleData: HoleData = {
@@ -23,12 +32,21 @@ const defaultHoleData: HoleData = {
   score: 4,
   putts: 2,
   fairwayHit: true,
-  greenHit: true,
   pinHit: false,
-  ob: false,
-  obType: "",
-  approachDistance: 0,
-  approachSuccess: false,
+  ob1w: 0,
+  obOther: 0,
+  shotCount30: 0,
+  shotCount80: 0,
+  shotCount120: 0,
+  shotCount160: 0,
+  shotCount180: 0,
+  shotCount181plus: 0,
+  shotsuccess30: 0,
+  shotsuccess80: 0,
+  shotsuccess120: 0,
+  shotsuccess160: 0,
+  shotsuccess180: 0,
+  shotsuccess181plus: 0
 }
 
 export function useHoleData() {
@@ -52,13 +70,35 @@ export function useHoleData() {
     setRoundData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleHoleChange = (field: keyof HoleData, value: any) => {
+  const handleHoleChange = (field: string, value: any) => {
     setHoles((prev) => {
       const newHoles = [...prev]
       newHoles[currentHole - 1] = {
         ...newHoles[currentHole - 1],
         [field]: value,
       }
+      
+      // スコアやショットカウントが変更された場合、自動的にショット成功を設定
+      const updatedHole = newHoles[currentHole - 1];
+      
+      // ホールアウトしている（スコアが入力されている）場合は、
+      // 最短距離のショットは成功しているとみなす
+      if (updatedHole.score > 0) {
+        if (updatedHole.shotCount30 > 0) {
+          updatedHole.shotsuccess30 = 1;
+        } else if (updatedHole.shotCount80 > 0) {
+          updatedHole.shotsuccess80 = 1;
+        } else if (updatedHole.shotCount120 > 0) {
+          updatedHole.shotsuccess120 = 1;
+        } else if (updatedHole.shotCount160 > 0) {
+          updatedHole.shotsuccess160 = 1;
+        } else if (updatedHole.shotCount180 > 0) {
+          updatedHole.shotsuccess180 = 1;
+        } else if (updatedHole.shotCount181plus > 0) {
+          updatedHole.shotsuccess181plus = 1;
+        }
+      }
+      
       return newHoles
     })
   }
@@ -111,10 +151,10 @@ export function useHoleData() {
       }
 
       // Green hits
-      if (hole.greenHit && hole.score <= hole.par) {
+      if (hole.score <= hole.par) {
         performance.par_on! += 1
       }
-      if (hole.greenHit && hole.score === hole.par + 1) {
+      if (hole.score === hole.par + 1) {
         performance.bogey_on! += 1
       }
 
@@ -124,50 +164,22 @@ export function useHoleData() {
       }
 
       // OB counts
-      if (hole.ob) {
-        if (hole.obType === "1w") {
-          performance.ob_1w! += 1
-        } else if (hole.obType === "2nd") {
-          performance.ob_2nd! += 1
-        } else {
-          performance.ob_other! += 1
-        }
-      }
+      performance.ob_1w! += hole.ob1w
+      performance.ob_other! += hole.obOther
 
       // Distance-based success rates
-      if (hole.approachDistance > 0) {
-        if (hole.approachDistance <= 30) {
-          performance.dist_1_30_total! += 1
-          if (hole.approachSuccess) {
-            performance.dist_1_30_success! += 1
-          }
-        } else if (hole.approachDistance <= 80) {
-          performance.dist_31_80_total! += 1
-          if (hole.approachSuccess) {
-            performance.dist_31_80_success! += 1
-          }
-        } else if (hole.approachDistance <= 120) {
-          performance.dist_81_120_total! += 1
-          if (hole.approachSuccess) {
-            performance.dist_81_120_success! += 1
-          }
-        } else if (hole.approachDistance <= 160) {
-          performance.dist_121_160_total! += 1
-          if (hole.approachSuccess) {
-            performance.dist_121_160_success! += 1
-          }
-        } else if (hole.approachDistance <= 180) {
-          performance.dist_161_180_total! += 1
-          if (hole.approachSuccess) {
-            performance.dist_161_180_success! += 1
-          }
-        } else {
-          performance.dist_181_plus_total! += 1
-          if (hole.approachSuccess) {
-            performance.dist_181_plus_success! += 1
-          }
-        }
-      }
+      performance.dist_1_30_total! += hole.shotCount30
+      performance.dist_1_30_success! += hole.shotsuccess30
+      performance.dist_31_80_total! += hole.shotCount80
+      performance.dist_31_80_success! += hole.shotsuccess80
+      performance.dist_81_120_total! += hole.shotCount120
+      performance.dist_81_120_success! += hole.shotsuccess120
+      performance.dist_121_160_total! += hole.shotCount160
+      performance.dist_121_160_success! += hole.shotsuccess160
+      performance.dist_161_180_total! += hole.shotCount180
+      performance.dist_161_180_success! += hole.shotsuccess180
+      performance.dist_181_plus_total! += hole.shotCount181plus
+      performance.dist_181_plus_success! += hole.shotsuccess181plus
     })
 
     return performance
