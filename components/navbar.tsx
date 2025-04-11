@@ -3,11 +3,10 @@
 import type React from "react"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, memo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { GolfIcon } from "./golf-icon"
-import { Menu, X, User, BarChart2, PlusCircle, Home, ChevronDown } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Menu, X, User, BarChart2, PlusCircle, Home } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
 import { LoadingModal } from "@/components/ui/loading-modal"
@@ -15,11 +14,18 @@ import { LoadingModal } from "@/components/ui/loading-modal"
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { isNavigating, navigate, setIsNavigating } = useLoadingNavigation()
+  const { isNavigating, navigate } = useLoadingNavigation()
+  const wasNavigatingRef = useRef(isNavigating)
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen(prevState => !prevState)
+  }, [])
+
+  // リンククリックのハンドラー
+  const handleLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    e.preventDefault()
+    navigate(path)
+  }, [navigate])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,10 +42,16 @@ export default function Navbar() {
     }
   }, [])
 
-  // ドロップダウンメニューの項目をクリックしたときの処理
-  const handleMenuItemClick = (href: string) => {
-    navigate(href);
-  };
+  // 画面遷移が完了したらメニューを閉じる - 遷移完了時のみ実行されるように改善
+  useEffect(() => {
+    // 遷移中から遷移完了に変わった時のみメニューを閉じる
+    if (wasNavigatingRef.current && !isNavigating && isMenuOpen) {
+      setIsMenuOpen(false)
+    }
+    
+    // 参照を更新
+    wasNavigatingRef.current = isNavigating;
+  }, [isNavigating]);
 
   return (
     <>
@@ -51,7 +63,9 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-4 py-3">
           <div className="flex flex-wrap justify-between items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/" 
+              onClick={(e) => handleLinkClick(e, "/")}
+              className="flex items-center">
               <GolfIcon className="h-6 w-6 mr-2 text-golf-500" />
               <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
                 ゴルフ部スコア管理
@@ -63,17 +77,16 @@ export default function Navbar() {
               </Button>
             </div>
             <div className="hidden md:flex md:items-center md:space-x-1">
-              <NavLink href="/" icon={<Home className="h-4 w-4 mr-1" />}>
+              <NavLink href="/" icon={<Home className="h-4 w-4 mr-1" />} onClickNav={handleLinkClick}>
                 ホーム
               </NavLink>
-              <NavLink href="/players" icon={<User className="h-4 w-4 mr-1" />}>
+              <NavLink href="/players" icon={<User className="h-4 w-4 mr-1" />} onClickNav={handleLinkClick}>
                 プレイヤー
               </NavLink>
-              <NavLink href="/playerstats" icon={<BarChart2 className="h-4 w-4 mr-1" />}>
+              <NavLink href="/playerstats" icon={<BarChart2 className="h-4 w-4 mr-1" />} onClickNav={handleLinkClick}>
                 統計
               </NavLink>
-
-              <NavLink href="/submit-score" icon={<PlusCircle className="h-4 w-4 mr-1" />}>
+              <NavLink href="/submit-score" icon={<PlusCircle className="h-4 w-4 mr-1" />} onClickNav={handleLinkClick}>
                 スコア入力
               </NavLink>
             </div>
@@ -89,16 +102,16 @@ export default function Navbar() {
                 className="md:hidden overflow-hidden"
               >
                 <div className="flex flex-col space-y-2 pt-4 pb-3">
-                  <MobileNavLink href="/" icon={<Home className="h-5 w-5 mr-2" />}>
+                  <MobileNavLink href="/" icon={<Home className="h-5 w-5 mr-2" />} onClickNav={handleLinkClick}>
                     ホーム
                   </MobileNavLink>
-                  <MobileNavLink href="/players" icon={<User className="h-5 w-5 mr-2" />}>
+                  <MobileNavLink href="/players" icon={<User className="h-5 w-5 mr-2" />} onClickNav={handleLinkClick}>
                     プレイヤー一覧
                   </MobileNavLink>
-                  <MobileNavLink href="/playerstats" icon={<BarChart2 className="h-5 w-5 mr-2" />}>
+                  <MobileNavLink href="/playerstats" icon={<BarChart2 className="h-5 w-5 mr-2" />} onClickNav={handleLinkClick}>
                     統計比較
                   </MobileNavLink>
-                  <MobileNavLink href="/submit-score" icon={<PlusCircle className="h-5 w-5 mr-2" />}>
+                  <MobileNavLink href="/submit-score" icon={<PlusCircle className="h-5 w-5 mr-2" />} onClickNav={handleLinkClick}>
                     スコア入力
                   </MobileNavLink>
                 </div>
@@ -111,43 +124,36 @@ export default function Navbar() {
   )
 }
 
-function NavLink({ href, children, icon }: { href: string; children: React.ReactNode; icon: React.ReactNode }) {
-  const { navigate } = useLoadingNavigation();
-  
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(href);
-  };
-  
+interface NavLinkProps {
+  href: string
+  children: React.ReactNode
+  icon: React.ReactNode
+  onClickNav: (e: React.MouseEvent<HTMLAnchorElement>, path: string) => void
+}
+
+const NavLink = memo(function NavLink({ href, children, icon, onClickNav }: NavLinkProps) {
   return (
     <a
       href={href}
-      onClick={handleClick}
+      onClick={(e) => onClickNav(e, href)}
       className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-golf-600 hover:bg-gray-50 rounded-md transition-colors duration-200"
     >
       {icon}
       {children}
     </a>
   )
-}
+})
 
-function MobileNavLink({ href, children, icon }: { href: string; children: React.ReactNode; icon: React.ReactNode }) {
-  const { navigate } = useLoadingNavigation();
-  
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(href);
-  };
-
+const MobileNavLink = memo(function MobileNavLink({ href, children, icon, onClickNav }: NavLinkProps) {
   return (
     <a
       href={href}
-      onClick={handleClick}
+      onClick={(e) => onClickNav(e, href)}
       className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-golf-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
     >
       {icon}
       {children}
     </a>
   )
-}
+})
 

@@ -1,31 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export function useLoadingNavigation() {
   const router = useRouter();
   const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const navigatingToRef = useRef<string | null>(null);
   
   // 画面遷移が完了したときにローディング状態をリセット
   useEffect(() => {
-    if (isNavigating && navigatingTo === pathname) {
+    if (isNavigating && navigatingToRef.current === pathname) {
       // パス名が一致したら、画面遷移が完了したとみなす
       setIsNavigating(false);
-      setNavigatingTo(null);
+      navigatingToRef.current = null;
     }
-  }, [pathname, isNavigating, navigatingTo]);
+  }, [pathname, isNavigating]);
   
-  const navigate = (path: string) => {
+  const navigate = useCallback((path: string) => {
+    // 現在と同じパスへの遷移はスキップ
+    if (path === pathname) return;
+    
     setIsNavigating(true);
-    setNavigatingTo(path);
+    navigatingToRef.current = path;
+    
     // 画面遷移前にローディング状態を設定
-    setTimeout(() => {
-      router.push(path);
-    }, 10); // わずかな遅延を設けて状態変更を確実に反映させる
-  };
+    // setTimeout を使わず、直接遷移させる
+    router.push(path);
+  }, [router, pathname]);
 
   return {
     isNavigating,
