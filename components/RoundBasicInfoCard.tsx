@@ -96,7 +96,7 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
             />
           </FormField>
 
-          <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+          {/* <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
             <Select
               value={roundData.round_count?.toString() || "1"}
               onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
@@ -110,7 +110,7 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
                 <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
               </SelectContent>
             </Select>
-          </FormField>
+          </FormField> */}
 
           <FormField label="天気" icon={<Cloud className="h-4 w-4 text-golf-500" />}>
             <Select value={roundData.weather || ""} onValueChange={(value) => handleRoundChange("weather", value)}>

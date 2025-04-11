@@ -31,7 +31,7 @@ const defaultHoleData: HoleData = {
   par: 4,
   score: 4,
   putts: 2,
-  fairwayHit: true,
+  fairwayHit: false,
   pinHit: false,
   ob1w: 0,
   obOther: 0,

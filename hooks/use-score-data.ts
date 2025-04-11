@@ -52,10 +52,10 @@ export function useScoreData() {
       return
     }
 
-    if (!roundData.player_id || !roundData.date || !roundData.course_name) {
+    if (!roundData.player_id || !roundData.date || !roundData.club_name) {
       toast({
         title: "入力エラー",
-        description: "プレイヤー、日付、コース名は必須です",
+        description: "プレイヤー、日付、クラブ名は必須です",
         variant: "destructive",
       })
       return
