@@ -14,8 +14,8 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "ゴルフ部スコア管理アプリ",
-  description: "ゴルフ部内のプレイヤーごとのラウンドスコア・パフォーマンスを記録・可視化するアプリ",
-    generator: 'v0.dev'
+  description: "ゴルフ部内のプレイヤーごとのラウンドスコア・パフォーマンスを記録・可視化するアプリ。made by Issa",
+
 }
 
 export default function RootLayout({
