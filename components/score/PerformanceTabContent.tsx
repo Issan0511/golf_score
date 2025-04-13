@@ -183,10 +183,7 @@ export function PerformanceTabContent({
           戻る: ホール別入力
         </Button>
         <Button 
-          onClick={() => {
-            console.log("スコア登録ボタンがクリックされました");
-            handleSubmit();
-          }} 
+          onClick={handleSubmit} 
           disabled={submitting} 
           className="bg-golf-600 hover:bg-golf-700 text-white"
         >
