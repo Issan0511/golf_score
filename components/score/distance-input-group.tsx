@@ -4,10 +4,10 @@ import { FormField } from "@/components/ui/form-field"
 
 interface DistanceInputGroupProps {
   title: string
-  successValue?: number
-  totalValue?: number
-  onSuccessChange: (value: number) => void
-  onTotalChange: (value: number) => void
+  successValue?: number | null
+  totalValue?: number | null
+  onSuccessChange: (value: number | null) => void
+  onTotalChange: (value: number | null) => void
 }
 
 /**
@@ -20,9 +20,11 @@ export const DistanceInputGroup = ({
   onSuccessChange,
   onTotalChange,
 }: DistanceInputGroupProps): React.ReactElement => {
+  console.log("-console by colipot-\n", `DistanceInputGroup(${title})レンダリング:`, { successValue, totalValue });
+
   // 成功率の計算
   const successRate = React.useMemo(() => {
-    if (totalValue && totalValue > 0 && successValue !== undefined) {
+    if (totalValue && totalValue > 0 && successValue !== undefined && successValue !== null) {
       return (successValue / totalValue) * 100;
     }
     return 0;
@@ -30,17 +32,24 @@ export const DistanceInputGroup = ({
 
   // 入力値が変更されたときの処理
   const handleSuccessChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === '' ? 0 : Number.parseInt(e.target.value) || 0;
+    const value = e.target.value === '' ? null : Number.parseInt(e.target.value) || 0;
+    console.log("-console by colipot-\n", "成功数変更:", value);
     onSuccessChange(value);
   }, [onSuccessChange]);
 
   const handleTotalChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === '' ? 0 : Number.parseInt(e.target.value) || 0;
+    const value = e.target.value === '' ? null : Number.parseInt(e.target.value) || 0;
+    console.log("-console by colipot-\n", "総数変更:", value);
     onTotalChange(value);
   }, [onTotalChange]);
 
+  // 入力値を適切に処理するヘルパー関数
+  const getInputValue = (value: any) => {
+    return value === null || value === undefined ? "" : value;
+  };
+
   // 成功率の表示条件
-  const showSuccessRate = Boolean(totalValue && totalValue >= 0 && successValue !== undefined);
+  const showSuccessRate = Boolean(totalValue && totalValue > 0 && successValue !== undefined && successValue !== null);
   
   return (
     <div className="mb-6 last:mb-0">
@@ -54,11 +63,12 @@ export const DistanceInputGroup = ({
           </div>
         ) : null}
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField label="成功数">
           <Input
             type="number"
-            value={successValue !== undefined ? successValue : ""}
+            value={getInputValue(successValue)}
             onChange={handleSuccessChange}
             placeholder="例: 3"
             className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
@@ -67,7 +77,7 @@ export const DistanceInputGroup = ({
         <FormField label="総数">
           <Input
             type="number"
-            value={totalValue !== undefined ? totalValue : ""}
+            value={getInputValue(totalValue)}
             onChange={handleTotalChange}
             placeholder="例: 5"
             className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"

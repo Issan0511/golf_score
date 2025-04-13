@@ -8,7 +8,6 @@ export function NavigationButtons({
   navigateToPrevTab,
   navigateToPerformanceTab,
   handleCompleteHoleInput,
-  handleSubmit
 }: NavigationButtonsProps) {
   return (
     <div className="flex justify-between">
@@ -29,22 +28,7 @@ export function NavigationButtons({
             次へ
           </Button>
         )}
-        {!navigateToPerformanceTab && (
-          <Button 
-            onClick={handleSubmit} 
-            disabled={submitting} 
-            className="bg-golf-600 hover:bg-golf-700 text-white"
-          >
-            {submitting ? (
-              <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                送信中...
-              </>
-            ) : (
-              "スコアを登録する"
-            )}
-          </Button>
-        )}
+
       </div>
     </div>
   )

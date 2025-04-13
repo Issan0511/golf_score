@@ -11,6 +11,7 @@ interface PerformanceTabContentProps {
   performanceData: any
   submitting: boolean
   handlePerformanceChange: (field: string, value: any) => void
+  hasNoHoles?: boolean
   handleSubmit: () => void
   navigateToPrevTab: () => void
 }
@@ -19,9 +20,39 @@ export function PerformanceTabContent({
   performanceData,
   submitting,
   handlePerformanceChange,
+  hasNoHoles=false,
   handleSubmit,
   navigateToPrevTab,
 }: PerformanceTabContentProps) {
+  console.log("-console by colipot-\n", "PerformanceTabContentがレンダリングされました", performanceData);
+  
+  
+  // パフォーマンスデータが空またはnullの場合の処理
+  if (!performanceData) {
+    console.log("-console by colipot-\n", "パフォーマンスデータが null または undefined です");
+    return (
+      <Card className="border-0 shadow-lg overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
+          <CardTitle className="text-golf-800">パフォーマンス</CardTitle>
+          <CardDescription>データの読み込み中にエラーが発生しました</CardDescription>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="text-red-500">パフォーマンスデータを読み込めませんでした。</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 入力値を適切に処理するヘルパー関数
+  const getInputValue = (value: any) => {
+    // nullやundefinedの場合は空文字列を返す
+    if (value === null || value === undefined) {
+      return "";
+    }
+    // 数値の場合はそのまま返す（0も正常に表示する）
+    return value;
+  };
+
   return (
     <Card className="border-0 shadow-lg overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">
@@ -35,8 +66,8 @@ export function PerformanceTabContent({
               <Input
                 id="one_putts"
                 type="number"
-                value={performanceData.one_putts !== undefined ? performanceData.one_putts : ""}
-                onChange={(e) => handlePerformanceChange("one_putts", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.one_putts)}
+                onChange={(e) => handlePerformanceChange("one_putts", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 5"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -45,8 +76,8 @@ export function PerformanceTabContent({
               <Input
                 id="three_putts_or_more"
                 type="number"
-                value={performanceData.three_putts_or_more !== undefined ? performanceData.three_putts_or_more : ""}
-                onChange={(e) => handlePerformanceChange("three_putts_or_more", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.three_putts_or_more)}
+                onChange={(e) => handlePerformanceChange("three_putts_or_more", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 2"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -60,8 +91,8 @@ export function PerformanceTabContent({
               <Input
                 id="par_on"
                 type="number"
-                value={performanceData.par_on !== undefined ? performanceData.par_on : ""}
-                onChange={(e) => handlePerformanceChange("par_on", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.par_on)}
+                onChange={(e) => handlePerformanceChange("par_on", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 8"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -70,8 +101,8 @@ export function PerformanceTabContent({
               <Input
                 id="bogey_on"
                 type="number"
-                value={performanceData.bogey_on !== undefined ? performanceData.bogey_on : ""}
-                onChange={(e) => handlePerformanceChange("bogey_on", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.bogey_on)}
+                onChange={(e) => handlePerformanceChange("bogey_on", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 6"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -80,8 +111,8 @@ export function PerformanceTabContent({
               <Input
                 id="in_pin"
                 type="number"
-                value={performanceData.in_pin !== undefined ? performanceData.in_pin : ""}
-                onChange={(e) => handlePerformanceChange("in_pin", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.in_pin)}
+                onChange={(e) => handlePerformanceChange("in_pin", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 4"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -95,8 +126,8 @@ export function PerformanceTabContent({
               <Input
                 id="ob_1w"
                 type="number"
-                value={performanceData.ob_1w !== undefined ? performanceData.ob_1w : ""}
-                onChange={(e) => handlePerformanceChange("ob_1w", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.ob_1w)}
+                onChange={(e) => handlePerformanceChange("ob_1w", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 1"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -105,8 +136,8 @@ export function PerformanceTabContent({
               <Input
                 id="ob_other"
                 type="number"
-                value={performanceData.ob_other !== undefined ? performanceData.ob_other : ""}
-                onChange={(e) => handlePerformanceChange("ob_other", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.ob_other)}
+                onChange={(e) => handlePerformanceChange("ob_other", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 0"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -115,8 +146,8 @@ export function PerformanceTabContent({
               <Input
                 id="ob_2nd"
                 type="number"
-                value={performanceData.ob_2nd !== undefined ? performanceData.ob_2nd : ""}
-                onChange={(e) => handlePerformanceChange("ob_2nd", Number.parseInt(e.target.value))}
+                value={getInputValue(performanceData.ob_2nd)}
+                onChange={(e) => handlePerformanceChange("ob_2nd", e.target.value === "" ? null : Number.parseInt(e.target.value))}
                 placeholder="例: 0"
                 className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
               />
@@ -127,53 +158,54 @@ export function PerformanceTabContent({
         <SectionCard title="距離帯別成功率" icon={<Trophy className="h-5 w-5 text-amber-500" />}>
           <DistanceInputGroup
             title="1-30m"
-            successValue={performanceData.dist_1_30_success}
-            totalValue={performanceData.dist_1_30_total}
+            successValue={getInputValue(performanceData.dist_1_30_success)}
+            totalValue={getInputValue(performanceData.dist_1_30_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_1_30_success", value)}
             onTotalChange={(value) => handlePerformanceChange("dist_1_30_total", value)}
           />
 
           <DistanceInputGroup
             title="31-80m"
-            successValue={performanceData.dist_31_80_success}
-            totalValue={performanceData.dist_31_80_total}
+            successValue={getInputValue(performanceData.dist_31_80_success)}
+            totalValue={getInputValue(performanceData.dist_31_80_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_31_80_success", value)}
             onTotalChange={(value) => handlePerformanceChange("dist_31_80_total", value)}
           />
 
           <DistanceInputGroup
             title="81-120m"
-            successValue={performanceData.dist_81_120_success}
-            totalValue={performanceData.dist_81_120_total}
+            successValue={getInputValue(performanceData.dist_81_120_success)}
+            totalValue={getInputValue(performanceData.dist_81_120_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_81_120_success", value)}
             onTotalChange={(value) => handlePerformanceChange("dist_81_120_total", value)}
           />
 
           <DistanceInputGroup
             title="121-160m"
-            successValue={performanceData.dist_121_160_success}
-            totalValue={performanceData.dist_121_160_total}
+            successValue={getInputValue(performanceData.dist_121_160_success)}
+            totalValue={getInputValue(performanceData.dist_121_160_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_121_160_success", value)}
             onTotalChange={(value) => handlePerformanceChange("dist_121_160_total", value)}
           />
 
           <DistanceInputGroup
             title="161-180m"
-            successValue={performanceData.dist_161_180_success}
-            totalValue={performanceData.dist_161_180_total}
+            successValue={getInputValue(performanceData.dist_161_180_success)}
+            totalValue={getInputValue(performanceData.dist_161_180_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_161_180_success", value)}
             onTotalChange={(value) => handlePerformanceChange("dist_161_180_total", value)}
           />
 
           <DistanceInputGroup
             title="181m+"
-            successValue={performanceData.dist_181_plus_success}
-            totalValue={performanceData.dist_181_plus_total}
+            successValue={getInputValue(performanceData.dist_181_plus_success)}
+            totalValue={getInputValue(performanceData.dist_181_plus_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_181_plus_success", value)}
             onTotalChange={(value) => handlePerformanceChange("dist_181_plus_total", value)}
           />
         </SectionCard>
       </CardContent>
+
       <CardFooter className="bg-gray-50 p-6 border-t border-gray-100 flex justify-between">
         <Button
           variant="outline"

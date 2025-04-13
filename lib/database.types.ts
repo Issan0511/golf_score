@@ -115,6 +115,7 @@ export interface Database {
           comment_to_subcoach: string | null
           club_name: string | null
           created_at: string | null
+          holes: Json[] | null
         }
         Insert: {
           id?: string
@@ -133,6 +134,7 @@ export interface Database {
           comment_to_subcoach?: string | null
           club_name?: string | null
           created_at?: string | null
+          holes?: Json[] | null
         }
         Update: {
           id?: string
@@ -151,6 +153,7 @@ export interface Database {
           comment_to_subcoach?: string | null
           club_name?: string | null
           created_at?: string | null
+          holes?: Json[] | null
         }
       }
       performance: {

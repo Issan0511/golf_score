@@ -26,6 +26,7 @@ export default function SubmitScorePage() {
     handleRoundChange,
     handlePerformanceChange,
     handleSubmit,
+    setHolesData, // 追加: ホールデータを設定する関数
   } = useScoreData()
 
   const {
@@ -34,10 +35,15 @@ export default function SubmitScorePage() {
     handleHoleChange,
     goToNextHole,
     goToPrevHole,
-    handleSubmit: handleHoleSubmit,
     setCurrentHole,
     getTotalHoles
   } = useHoleData({ externalRoundCount: roundData.round_count })
+
+  // holesデータが変更されるたびにuseScoreDataのホールデータを更新する
+  useEffect(() => {
+    console.log("-console by colipot-\n", `ホールデータが更新されました: ${holes.length}ホール`);
+    setHolesData(holes);
+  }, [holes, setHolesData]);
 
   // ホールデータからパフォーマンスデータを計算する関数
   const calculatePerformanceFromHoles = () => {
@@ -148,7 +154,7 @@ export default function SubmitScorePage() {
   // パフォーマンスデータを更新する関数
   const calculateAndUpdatePerformance = () => {
     const calculatedPerformance = calculatePerformanceFromHoles();
-    console.log("計算されたパフォーマンスデータ:", calculatedPerformance);
+    console.log("-console by colipot-\n", "計算されたパフォーマンスデータ:", calculatedPerformance);
     
     // パフォーマンスデータを更新
     Object.keys(calculatedPerformance).forEach(key => {
@@ -252,7 +258,6 @@ export default function SubmitScorePage() {
             handleHoleChange={handleHoleChange}
             goToNextHole={goToNextHole}
             goToPrevHole={goToPrevHole}
-            handleSubmit={handleHoleSubmit}
             navigateToPrevTab={goToRoundTab}
             calculateAndUpdatePerformance={calculateAndUpdatePerformance}
             navigateToPerformanceTab={navigateToPerformanceTab}

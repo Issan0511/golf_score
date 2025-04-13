@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { supabase, type Round, type Performance } from "@/lib/supabase"
+import { useState, useEffect, useRef } from "react"
+import { type Round, type Performance } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 
@@ -56,6 +56,8 @@ type UseHoleDataProps = {
 export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
+  // 外部から渡されたラウンド数を保持するref
+  const previousRoundCountRef = useRef(externalRoundCount);
 
   // Round data
   const [roundData, setRoundData] = useState<Partial<Round>>({
@@ -66,13 +68,17 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   
   // 外部からのラウンド数が変更された場合、内部のroundDataを更新
   useEffect(() => {
-    if (externalRoundCount !== undefined && externalRoundCount !== roundData.round_count) {
+    if (externalRoundCount !== undefined && externalRoundCount !== previousRoundCountRef.current) {
+      console.log("-console by colipot-\n", `外部から渡されたラウンド数が変更されました: ${externalRoundCount} (前回: ${previousRoundCountRef.current})`);
+      
+      previousRoundCountRef.current = externalRoundCount;
+      
       setRoundData(prev => ({
         ...prev,
         round_count: externalRoundCount
       }));
     }
-  }, [externalRoundCount, roundData.round_count]);
+  }, [externalRoundCount]); // 依存配列からroundData.round_countを削除
 
   // Hole data - デフォルトは1ラウンド分の18ホール
   const [holes, setHoles] = useState<HoleData[]>(
@@ -83,9 +89,9 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   // ラウンド数が変更された時にホール配列を調整する
   useEffect(() => {
     if (roundData.round_count) {
-      console.log(`ラウンド数が変更されました: ${roundData.round_count}`);
+      console.log("-console by colipot-\n", `ラウンド数が変更されました: ${roundData.round_count}`);
       const totalHoles = Math.floor(roundData.round_count * 18);
-      console.log(`新しい総ホール数: ${totalHoles}`);
+      console.log("-console by colipot-\n", `新しい総ホール数: ${totalHoles}`);
       
       // 現在のホールデータを保持しながら、新しいラウンド数に対応するホール配列を作成
       setHoles(prevHoles => {
@@ -94,7 +100,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
         
         // ホール配列のサイズ調整（拡大）
         if (totalHoles > prevHoles.length) {
-          console.log(`ホール配列を拡大: ${prevHoles.length} => ${totalHoles}`);
+          console.log("-console by colipot-\n", `ホール配列を拡大: ${prevHoles.length} => ${totalHoles}`);
           for (let i = prevHoles.length; i < totalHoles; i++) {
             newHoles.push({
               ...defaultHoleData,
@@ -104,7 +110,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
         } 
         // ホール配列のサイズ調整（縮小）
         else if (totalHoles < prevHoles.length) {
-          console.log(`ホール配列を縮小: ${prevHoles.length} => ${totalHoles}`);
+          console.log("-console by colipot-\n", `ホール配列を縮小: ${prevHoles.length} => ${totalHoles}`);
           newHoles.splice(totalHoles);
         }
         
@@ -113,11 +119,11 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
       
       // 現在選択しているホールが新しい総ホール数を超えている場合は調整
       if (currentHole > totalHoles) {
-        console.log(`現在のホール(${currentHole})が新しい総ホール数(${totalHoles})を超えています。調整します。`);
+        console.log("-console by colipot-\n", `現在のホール(${currentHole})が新しい総ホール数(${totalHoles})を超えています。調整します。`);
         setCurrentHole(totalHoles);
       }
     }
-  }, [roundData.round_count, currentHole]);
+  }, [roundData.round_count]);  // currentHoleを依存配列から削除
 
   const handleRoundChange = (field: keyof Round, value: any) => {
     setRoundData((prev) => ({ ...prev, [field]: value }))
@@ -158,7 +164,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   // 総ホール数を計算（ラウンド数に基づく）
   const getTotalHoles = (): number => {
     const totalHoles = Math.floor((roundData.round_count || 1) * 18);
-    console.log(`getTotalHoles が呼び出されました: ${totalHoles} (ラウンド数: ${roundData.round_count})`);
+    console.log("-console by colipot-\n", `getTotalHoles が呼び出されました: ${totalHoles} (ラウンド数: ${roundData.round_count})`);
     return totalHoles;
   }
 
@@ -264,7 +270,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
       inScore = holes.slice(9, 18).reduce((sum, hole) => sum + hole.score, 0);
     }
 
-    console.log(`スコア計算結果: 総スコア=${totalScore}, OUT=${outScore}, IN=${inScore}, ラウンド数=${roundData.round_count}`);
+    console.log("-console by colipot-\n", `スコア計算結果: 総スコア=${totalScore}, OUT=${outScore}, IN=${inScore}, ラウンド数=${roundData.round_count}`);
 
     return {
       ...roundData,
@@ -275,59 +281,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
     }
   }
 
-  const handleSubmit = async () => {
-    if (!roundData.player_id || !roundData.date || !roundData.course_name) {
-      toast({
-        title: "入力エラー",
-        description: "プレイヤー、日付、コース名は必須です",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setSubmitting(true)
-
-    try {
-      // Calculate final round data
-      const finalRoundData = calculateRoundData()
-
-      // Insert round data
-      const { data: roundResult, error: roundError } = await supabase
-        .from("rounds")
-        .insert(finalRoundData)
-        .select()
-        .single()
-
-      if (roundError) throw roundError
-
-      // Calculate performance data
-      const performanceData = calculatePerformanceData()
-
-      // Insert performance data with the round ID
-      const { error: perfError } = await supabase.from("performance").insert({
-        id: roundResult.id,
-        ...performanceData,
-      })
-
-      if (perfError) throw perfError
-
-      toast({
-        title: "登録完了",
-        description: "スコアが正常に登録されました",
-        variant: "default",
-      })
-      router.push(`/player/${roundData.player_id}`)
-    } catch (error) {
-      console.error("Error submitting score:", error)
-      toast({
-        title: "エラー",
-        description: "スコア登録中にエラーが発生しました",
-        variant: "destructive",
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  // handleSubmitは削除 - useScoreDataと機能重複しているため
 
   return {
     roundData,
@@ -338,7 +292,8 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
     handleHoleChange,
     goToNextHole,
     goToPrevHole,
-    handleSubmit,
+    calculatePerformanceData,
+    calculateRoundData,
     setCurrentHole,
     getTotalHoles  // 総ホール数を取得する関数を追加
   }

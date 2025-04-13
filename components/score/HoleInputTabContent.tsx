@@ -16,7 +16,6 @@ export function HoleInputTabContent({
   handleHoleChange,
   goToNextHole,
   goToPrevHole,
-  handleSubmit,
   navigateToPrevTab,
   calculateAndUpdatePerformance,
   navigateToPerformanceTab,
@@ -156,7 +155,6 @@ export function HoleInputTabContent({
           navigateToPrevTab={navigateToPrevTab}
           navigateToPerformanceTab={navigateToPerformanceTab}
           handleCompleteHoleInput={handleCompleteHoleInput}
-          handleSubmit={handleSubmit}
         />
       </CardFooter>
     </Card>

@@ -1,9 +1,11 @@
-import { useState } from "react"
-import { supabase, type Round, type Performance } from "@/lib/supabase"
-import { toast } from "@/hooks/use-toast"
+import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
+import { useToast } from "@/components/ui/use-toast"
+import type { Round, Performance } from "@/lib/supabase"
 
 export function useScoreData() {
+  const { toast } = useToast()
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
@@ -14,36 +16,57 @@ export function useScoreData() {
     is_competition: false,
   })
 
-  // Performance data
+  // Performance data - 初期値はnullに設定して、入力フィールドが上書きしないようにする
   const [performanceData, setPerformanceData] = useState<Partial<Performance>>({
-    one_putts: 0,
-    three_putts_or_more: 0,
-    par_on: 0,
-    bogey_on: 0,
-    in_pin: 0,
-    ob_1w: 0,
-    ob_other: 0,
-    ob_2nd: 0,
-    dist_1_30_success: 0,
-    dist_1_30_total: 0,
-    dist_31_80_success: 0,
-    dist_31_80_total: 0,
-    dist_81_120_success: 0,
-    dist_81_120_total: 0,
-    dist_121_160_success: 0,
-    dist_121_160_total: 0,
-    dist_161_180_success: 0,
-    dist_161_180_total: 0,
-    dist_181_plus_success: 0,
-    dist_181_plus_total: 0,
+    one_putts: null,
+    three_putts_or_more: null,
+    par_on: null,
+    bogey_on: null,
+    in_pin: null,
+    ob_1w: null,
+    ob_other: null,
+    ob_2nd: null,
+    dist_1_30_success: null,
+    dist_1_30_total: null,
+    dist_31_80_success: null,
+    dist_31_80_total: null,
+    dist_81_120_success: null,
+    dist_81_120_total: null,
+    dist_121_160_success: null,
+    dist_121_160_total: null,
+    dist_161_180_success: null,
+    dist_161_180_total: null,
+    dist_181_plus_success: null,
+    dist_181_plus_total: null,
   })
 
+  // ホールデータの配列を保持するstate
+  const [holes, setHoles] = useState<any[]>([])
+
   const handleRoundChange = (field: keyof Round, value: any) => {
+    console.log("-console by colipot-\n", `ラウンドデータ更新: ${String(field)} = ${value}`);
     setRoundData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handlePerformanceChange = (field: keyof Performance, value: any) => {
+    console.log("-console by colipot-\n", `パフォーマンスデータ更新: ${String(field)} = ${value}`);
     setPerformanceData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  // パフォーマンスデータを一括で設定する関数を追加
+  const setPerformanceDataBulk = useCallback((data: Partial<Performance>) => {
+    console.log("-console by colipot-\n", `パフォーマンスデータを一括設定:`, data);
+    // 既存のパフォーマンスデータとマージして更新
+    setPerformanceData(prev => ({
+      ...prev,
+      ...data
+    }));
+  }, []);
+
+  // ホールデータを設定するための関数
+  const setHolesData = (holesData: any[]) => {
+    console.log("-console by colipot-\n", `ホールデータを設定します: ${holesData.length}ホール`);
+    setHoles(holesData)
   }
 
   const handleSubmit = async () => {
@@ -63,25 +86,32 @@ export function useScoreData() {
       missingFields.push("日付");
     }
     
-    if (!roundData.club_name) {
-      missingFields.push("クラブ名");
+    if (!roundData.course_name) {
+      missingFields.push("コース名");
     }
-    
-    // 不足している項目がある場合はエラーを表示
+
     if (missingFields.length > 0) {
       toast({
         title: "入力エラー",
-        description: `以下の必須項目が入力されていません: \n【${missingFields.join("、")}】`,
+        description: `以下の項目を入力してください: ${missingFields.join(", ")}`,
         variant: "destructive",
       })
       return
     }
 
-    setSubmitting(true)
-
     try {
+      setSubmitting(true)
+
+      // Prepare roundData with holes
+      const roundDataWithHoles = {
+        ...roundData,
+        holes: holes,
+      }
+      
+      console.log("-console by colipot-\n", `送信するデータ: `, roundDataWithHoles);
+
       // Insert round data
-      const { data: roundResult, error: roundError } = await supabase.from("rounds").insert(roundData).select().single()
+      const { data: roundResult, error: roundError } = await supabase.from("rounds").insert(roundDataWithHoles).select().single()
 
       if (roundError) {
         throw roundError;
@@ -108,9 +138,10 @@ export function useScoreData() {
     } catch (error) {
       toast({
         title: "エラー",
-        description: "スコア登録中にエラーが発生しました",
+        description: "データの送信中にエラーが発生しました",
         variant: "destructive",
       })
+      console.error("Submission error:", error)
     } finally {
       setSubmitting(false)
     }
@@ -119,9 +150,12 @@ export function useScoreData() {
   return {
     roundData,
     performanceData,
+    holes,
     submitting,
     handleRoundChange,
     handlePerformanceChange,
-    handleSubmit
+    setPerformanceDataBulk,
+    setHolesData,
+    handleSubmit,
   }
 }
