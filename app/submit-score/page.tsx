@@ -147,7 +147,6 @@ export default function SubmitScorePage() {
 
   // パフォーマンスデータを更新する関数
   const calculateAndUpdatePerformance = () => {
-    console.log("===== パフォーマンスデータの計算と更新を開始 =====");
     const calculatedPerformance = calculatePerformanceFromHoles();
     console.log("計算されたパフォーマンスデータ:", calculatedPerformance);
     
@@ -155,35 +154,28 @@ export default function SubmitScorePage() {
     Object.keys(calculatedPerformance).forEach(key => {
       handlePerformanceChange(key as keyof typeof calculatedPerformance, calculatedPerformance[key as keyof typeof calculatedPerformance]);
     });
-    console.log("パフォーマンスデータの更新完了");
   };
 
   // パフォーマンスタブに遷移する関数
   const navigateToPerformanceTab = () => {
-    console.log("===== パフォーマンスタブへの遷移を開始 =====");
     
     // まずパフォーマンスデータを計算・更新
     calculateAndUpdatePerformance();
     
     // その後、activeTab状態を変更してタブを切り替え
-    console.log("アクティブタブを 'performance' に変更します");
     setActiveTab("performance");
-    console.log("タブ切り替え完了");
   };
 
   // タブが変更されたときのハンドラー
   const handleTabChange = (value: string) => {
-    console.log(`===== タブが ${value} に変更されました =====`);
     
     // パフォーマンスタブが選択された場合、データを更新
     if (value === "performance") {
-      console.log("パフォーマンスタブが選択されたため、データを更新します");
       calculateAndUpdatePerformance();
     }
     
     // アクティブタブの状態を更新
     setActiveTab(value);
-    console.log(`アクティブタブを ${value} に設定しました`);
   };
 
   // ラウンド情報タブへ移動
@@ -266,7 +258,7 @@ export default function SubmitScorePage() {
             navigateToPerformanceTab={navigateToPerformanceTab}
             setCurrentHole={setCurrentHole}
             roundCount={roundData.round_count || 1}
-            getTotalHoles={getTotalHoles}
+            getTotalHoles={getTotalHoles} 
           />
         </TabsContent>
 

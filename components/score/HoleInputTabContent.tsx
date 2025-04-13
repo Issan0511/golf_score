@@ -82,12 +82,10 @@ export function HoleInputTabContent({
 
   // ホール入力完了時のハンドラー
   const handleCompleteHoleInput = () => {
-    console.log("===== 「次へ：パフォーマンス入力」ボタンがクリックされました =====");
     console.log("現在のホールデータ:", JSON.stringify(holes, null, 2));
     
     // パフォーマンスデータを更新する関数が提供されていれば実行
     if (calculateAndUpdatePerformance) {
-      console.log("calculateAndUpdatePerformance関数を実行します");
       calculateAndUpdatePerformance();
     } else {
       console.log("calculateAndUpdatePerformance関数がありません");
@@ -95,7 +93,6 @@ export function HoleInputTabContent({
     
     // パフォーマンスタブに遷移する関数が提供されていれば実行
     if (navigateToPerformanceTab) {
-      console.log("navigateToPerformanceTab関数を実行します");
       navigateToPerformanceTab();
     } else {
       console.log("navigateToPerformanceTab関数がありません。通常のsubmit処理を実行します");
