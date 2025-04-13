@@ -34,6 +34,7 @@ export interface HoleInputTabContentProps {
   navigateToPrevTab: () => void
   calculateAndUpdatePerformance?: () => void
   navigateToPerformanceTab?: () => void
+  setCurrentHole: (holeNumber: number) => void
 }
 
 // 子コンポーネントのprops
@@ -60,6 +61,7 @@ export interface HoleSummaryProps {
   holes: HoleData[]
   currentHole: number
   handleHoleChange: (field: string, value: any) => void
+  setCurrentHole: (holeNumber: number) => void
 }
 
 export interface NavigationButtonsProps {

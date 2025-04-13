@@ -35,6 +35,7 @@ export default function SubmitScorePage() {
     goToNextHole,
     goToPrevHole,
     handleSubmit: handleHoleSubmit,
+    setCurrentHole
   } = useHoleData()
 
   // ホールデータからパフォーマンスデータを計算する関数
@@ -262,6 +263,7 @@ export default function SubmitScorePage() {
             navigateToPrevTab={goToRoundTab}
             calculateAndUpdatePerformance={calculateAndUpdatePerformance}
             navigateToPerformanceTab={navigateToPerformanceTab}
+            setCurrentHole={setCurrentHole}
           />
         </TabsContent>
 

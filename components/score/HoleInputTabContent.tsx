@@ -20,6 +20,7 @@ export function HoleInputTabContent({
   navigateToPrevTab,
   calculateAndUpdatePerformance,
   navigateToPerformanceTab,
+  setCurrentHole,
 }: HoleInputTabContentProps) {
   const getShortestApproachDistance = () => {
     const hole = holes[currentHole - 1]
@@ -139,7 +140,8 @@ export function HoleInputTabContent({
         <HoleSummary 
           holes={holes} 
           currentHole={currentHole} 
-          handleHoleChange={handleHoleChange} 
+          handleHoleChange={handleHoleChange}
+          setCurrentHole={(holeNumber) => setCurrentHole(holeNumber)}
         />
       </CardContent>
       <CardFooter className="bg-gray-50 p-6 border-t border-gray-100">

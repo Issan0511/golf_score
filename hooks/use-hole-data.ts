@@ -264,6 +264,7 @@ export function useHoleData() {
     handleHoleChange,
     goToNextHole,
     goToPrevHole,
-    handleSubmit
+    handleSubmit,
+    setCurrentHole
   }
 }
