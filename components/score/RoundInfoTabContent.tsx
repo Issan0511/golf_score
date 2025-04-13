@@ -106,7 +106,7 @@ export function RoundInfoTabContent({
             </Select>
           </FormField>
 
-          {/* <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+          <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
             <Select
               value={roundData.round_count?.toString() || "1"}
               onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
@@ -120,7 +120,7 @@ export function RoundInfoTabContent({
                 <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
               </SelectContent>
             </Select>
-          </FormField> */}
+          </FormField> 
 
         </div>
         <div className="space-y-2 pt-4">

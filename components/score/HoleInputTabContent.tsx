@@ -21,7 +21,13 @@ export function HoleInputTabContent({
   calculateAndUpdatePerformance,
   navigateToPerformanceTab,
   setCurrentHole,
+  roundCount = 1, // デフォルト値を1に設定
+  getTotalHoles, // getTotalHoles関数を受け取る
 }: HoleInputTabContentProps) {
+  // ラウンド数に基づいた総ホール数を計算
+  // getTotalHolesが提供されていればそれを使用、なければラウンド数から計算
+  const totalHoles = getTotalHoles ? getTotalHoles() : 18 * roundCount;
+
   const getShortestApproachDistance = () => {
     const hole = holes[currentHole - 1]
 
@@ -106,7 +112,7 @@ export function HoleInputTabContent({
           <div>
             <CardTitle className="text-golf-800">ホール {currentHole} の入力</CardTitle>
           </div>
-          <Badge className="bg-golf-600 text-white px-3 py-1 text-lg min-w-[60px]">{currentHole} / 18</Badge>
+          <Badge className="bg-golf-600 text-white px-3 py-1 text-lg min-w-[60px]">{currentHole} / {totalHoles}</Badge>
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -114,7 +120,8 @@ export function HoleInputTabContent({
           <HoleNavigation 
             currentHole={currentHole} 
             goToPrevHole={goToPrevHole} 
-            goToNextHole={goToNextHole} 
+            goToNextHole={goToNextHole}
+            totalHoles={totalHoles}
           />
 
           <HoleScoreInput 
@@ -142,6 +149,7 @@ export function HoleInputTabContent({
           currentHole={currentHole} 
           handleHoleChange={handleHoleChange}
           setCurrentHole={(holeNumber) => setCurrentHole(holeNumber)}
+          totalHoles={totalHoles}
         />
       </CardContent>
       <CardFooter className="bg-gray-50 p-6 border-t border-gray-100">

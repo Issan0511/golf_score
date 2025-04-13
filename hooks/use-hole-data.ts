@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { supabase, type Round, type Performance } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
@@ -49,22 +49,75 @@ const defaultHoleData: HoleData = {
   shotsuccess181plus: 0
 }
 
-export function useHoleData() {
+type UseHoleDataProps = {
+  externalRoundCount?: number; // 外部から渡されるラウンド数
+}
+
+export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
   // Round data
   const [roundData, setRoundData] = useState<Partial<Round>>({
     date: new Date().toISOString().split("T")[0],
-    round_count: 1.0,
+    round_count: externalRoundCount || 1.0, // 外部から渡されたラウンド数を優先
     is_competition: false,
   })
+  
+  // 外部からのラウンド数が変更された場合、内部のroundDataを更新
+  useEffect(() => {
+    if (externalRoundCount !== undefined && externalRoundCount !== roundData.round_count) {
+      setRoundData(prev => ({
+        ...prev,
+        round_count: externalRoundCount
+      }));
+    }
+  }, [externalRoundCount, roundData.round_count]);
 
-  // Hole data
+  // Hole data - デフォルトは1ラウンド分の18ホール
   const [holes, setHoles] = useState<HoleData[]>(
-    Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 })),
+    Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 }))
   )
   const [currentHole, setCurrentHole] = useState(1)
+
+  // ラウンド数が変更された時にホール配列を調整する
+  useEffect(() => {
+    if (roundData.round_count) {
+      console.log(`ラウンド数が変更されました: ${roundData.round_count}`);
+      const totalHoles = Math.floor(roundData.round_count * 18);
+      console.log(`新しい総ホール数: ${totalHoles}`);
+      
+      // 現在のホールデータを保持しながら、新しいラウンド数に対応するホール配列を作成
+      setHoles(prevHoles => {
+        // 必要な新しいホール配列のサイズ
+        const newHoles = [...prevHoles];
+        
+        // ホール配列のサイズ調整（拡大）
+        if (totalHoles > prevHoles.length) {
+          console.log(`ホール配列を拡大: ${prevHoles.length} => ${totalHoles}`);
+          for (let i = prevHoles.length; i < totalHoles; i++) {
+            newHoles.push({
+              ...defaultHoleData,
+              number: i + 1
+            });
+          }
+        } 
+        // ホール配列のサイズ調整（縮小）
+        else if (totalHoles < prevHoles.length) {
+          console.log(`ホール配列を縮小: ${prevHoles.length} => ${totalHoles}`);
+          newHoles.splice(totalHoles);
+        }
+        
+        return newHoles;
+      });
+      
+      // 現在選択しているホールが新しい総ホール数を超えている場合は調整
+      if (currentHole > totalHoles) {
+        console.log(`現在のホール(${currentHole})が新しい総ホール数(${totalHoles})を超えています。調整します。`);
+        setCurrentHole(totalHoles);
+      }
+    }
+  }, [roundData.round_count, currentHole]);
 
   const handleRoundChange = (field: keyof Round, value: any) => {
     setRoundData((prev) => ({ ...prev, [field]: value }))
@@ -81,8 +134,7 @@ export function useHoleData() {
       // スコアやショットカウントが変更された場合、自動的にショット成功を設定
       const updatedHole = newHoles[currentHole - 1];
       
-      // ホールアウトしている（スコアが入力されている）場合は、
-      // 最短距離のショットは成功しているとみなす
+      // ホールアウトしている（スコアが入力されている）場合は、最短距離のショットは成功しているとみなす
       if (updatedHole.score > 0) {
         if (updatedHole.shotCount30 > 0) {
           updatedHole.shotsuccess30 = 1;
@@ -103,15 +155,23 @@ export function useHoleData() {
     })
   }
 
+  // 総ホール数を計算（ラウンド数に基づく）
+  const getTotalHoles = (): number => {
+    const totalHoles = Math.floor((roundData.round_count || 1) * 18);
+    console.log(`getTotalHoles が呼び出されました: ${totalHoles} (ラウンド数: ${roundData.round_count})`);
+    return totalHoles;
+  }
+
   const goToNextHole = () => {
-    if (currentHole < 18) {
-      setCurrentHole(currentHole + 1)
+    const totalHoles = getTotalHoles();
+    if (currentHole < totalHoles) {
+      setCurrentHole(currentHole + 1);
     }
   }
 
   const goToPrevHole = () => {
     if (currentHole > 1) {
-      setCurrentHole(currentHole - 1)
+      setCurrentHole(currentHole - 1);
     }
   }
 
@@ -186,11 +246,25 @@ export function useHoleData() {
   }
 
   const calculateRoundData = (): Partial<Round> => {
-    // Calculate total score
-    const totalScore = holes.reduce((sum, hole) => sum + hole.score, 0)
-    const outScore = holes.slice(0, 9).reduce((sum, hole) => sum + hole.score, 0)
-    const inScore = holes.slice(9, 18).reduce((sum, hole) => sum + hole.score, 0)
-    const totalPutts = holes.reduce((sum, hole) => sum + hole.putts, 0)
+    // 総ホール数を取得
+    const totalHoles = getTotalHoles();
+    
+    // 全ホールの合計スコア
+    const totalScore = holes.reduce((sum, hole) => sum + hole.score, 0);
+    
+    // パット数の合計
+    const totalPutts = holes.reduce((sum, hole) => sum + hole.putts, 0);
+    
+    // 1ラウンド（18ホール）の場合のみOUT/INスコアを計算、それ以外はNULL
+    let outScore = null;
+    let inScore = null;
+    
+    if (totalHoles === 18) {
+      outScore = holes.slice(0, 9).reduce((sum, hole) => sum + hole.score, 0);
+      inScore = holes.slice(9, 18).reduce((sum, hole) => sum + hole.score, 0);
+    }
+
+    console.log(`スコア計算結果: 総スコア=${totalScore}, OUT=${outScore}, IN=${inScore}, ラウンド数=${roundData.round_count}`);
 
     return {
       ...roundData,
@@ -265,6 +339,7 @@ export function useHoleData() {
     goToNextHole,
     goToPrevHole,
     handleSubmit,
-    setCurrentHole
+    setCurrentHole,
+    getTotalHoles  // 総ホール数を取得する関数を追加
   }
 }

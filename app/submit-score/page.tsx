@@ -35,8 +35,9 @@ export default function SubmitScorePage() {
     goToNextHole,
     goToPrevHole,
     handleSubmit: handleHoleSubmit,
-    setCurrentHole
-  } = useHoleData()
+    setCurrentHole,
+    getTotalHoles
+  } = useHoleData({ externalRoundCount: roundData.round_count })
 
   // ホールデータからパフォーマンスデータを計算する関数
   const calculatePerformanceFromHoles = () => {
@@ -264,6 +265,8 @@ export default function SubmitScorePage() {
             calculateAndUpdatePerformance={calculateAndUpdatePerformance}
             navigateToPerformanceTab={navigateToPerformanceTab}
             setCurrentHole={setCurrentHole}
+            roundCount={roundData.round_count || 1}
+            getTotalHoles={getTotalHoles}
           />
         </TabsContent>
 

@@ -4,11 +4,9 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from "@/components/navbar"
-// 誤ったインポート
-// import { GolfIcon } from "@/components/icons"
-
 // 正しいインポートに修正
 import { GolfIcon } from "@/components/golf-icon"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,6 +27,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <Navbar />
           <main className="pt-16">{children}</main>
+          <Toaster />
           <footer className="bg-white border-t border-gray-200 py-8 mt-20">
             <div className="container mx-auto px-4">
               <div className="flex flex-col md:flex-row justify-between items-center">
@@ -55,7 +54,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-
-import './globals.css'

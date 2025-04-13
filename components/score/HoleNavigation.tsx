@@ -6,9 +6,15 @@ interface HoleNavigationProps {
   currentHole: number
   goToPrevHole: () => void
   goToNextHole: () => void
+  totalHoles?: number // ラウンド数に基づく総ホール数
 }
 
-export function HoleNavigation({ currentHole, goToPrevHole, goToNextHole }: HoleNavigationProps) {
+export function HoleNavigation({ 
+  currentHole, 
+  goToPrevHole, 
+  goToNextHole, 
+  totalHoles = 18 // デフォルト値を18に設定
+}: HoleNavigationProps) {
   return (
     <div className="flex justify-between items-center mb-6">
       <Button
@@ -21,13 +27,12 @@ export function HoleNavigation({ currentHole, goToPrevHole, goToNextHole }: Hole
         前のホール
       </Button>
       <div className="text-center bg-golf-50 px-6 py-3 rounded-full">
-
         <div className="text-2xl font-bold text-golf-800">{currentHole}</div>
       </div>
       <Button
         variant="outline"
         onClick={goToNextHole}
-        disabled={currentHole === 18}
+        disabled={currentHole === totalHoles}
         className="border-golf-500 text-golf-600 hover:bg-golf-50 flex items-center justify-center w-32"
       >
         次のホール

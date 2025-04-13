@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { supabase, type Round, type Performance } from "@/lib/supabase"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 
 export function useScoreData() {
@@ -49,25 +49,58 @@ export function useScoreData() {
   const handleSubmit = async () => {
     // すでに送信中の場合は処理をスキップ（二重送信防止）
     if (submitting) {
+      console.log("既に送信中のため、処理をスキップします");
       return
     }
 
-    if (!roundData.player_id || !roundData.date || !roundData.club_name) {
+    console.log("必須項目チェック開始:", {
+      player_id: roundData.player_id,
+      date: roundData.date,
+      club_name: roundData.club_name,
+      roundData: roundData
+    });
+
+    // 必須項目の検証
+    const missingFields = [];
+    
+    if (!roundData.player_id) {
+      missingFields.push("プレイヤー");
+    }
+    
+    if (!roundData.date) {
+      missingFields.push("日付");
+    }
+    
+    if (!roundData.club_name) {
+      missingFields.push("クラブ名");
+    }
+    
+    console.log("不足している項目:", missingFields);
+    
+    // 不足している項目がある場合はエラーを表示
+    if (missingFields.length > 0) {
+      console.log("エラーメッセージを表示します:", `以下の必須項目が入力されていません: \n【${missingFields.join("、")}】`);
       toast({
         title: "入力エラー",
-        description: "プレイヤー、日付、クラブ名は必須です",
+        description: `以下の必須項目が入力されていません: \n【${missingFields.join("、")}】`,
         variant: "destructive",
       })
       return
     }
 
     setSubmitting(true)
+    console.log("スコア登録処理を開始します:", roundData);
 
     try {
       // Insert round data
       const { data: roundResult, error: roundError } = await supabase.from("rounds").insert(roundData).select().single()
 
-      if (roundError) throw roundError
+      if (roundError) {
+        console.error("ラウンドデータ登録エラー:", roundError);
+        throw roundError;
+      }
+      
+      console.log("ラウンドデータが正常に登録されました:", roundResult);
 
       // Insert performance data with the round ID
       const { error: perfError } = await supabase.from("performance").insert({
@@ -75,7 +108,12 @@ export function useScoreData() {
         ...performanceData,
       })
 
-      if (perfError) throw perfError
+      if (perfError) {
+        console.error("パフォーマンスデータ登録エラー:", perfError);
+        throw perfError;
+      }
+      
+      console.log("パフォーマンスデータが正常に登録されました");
 
       toast({
         title: "登録完了",

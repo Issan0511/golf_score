@@ -35,6 +35,8 @@ export interface HoleInputTabContentProps {
   calculateAndUpdatePerformance?: () => void
   navigateToPerformanceTab?: () => void
   setCurrentHole: (holeNumber: number) => void
+  roundCount?: number // ラウンド数（デフォルト = 1）
+  getTotalHoles?: () => number // ラウンド数に基づいた総ホール数を計算する関数
 }
 
 // 子コンポーネントのprops
