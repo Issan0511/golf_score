@@ -20,7 +20,6 @@ export type Performance = Database["public"]["Tables"]["performance"]["Row"];
 
 // プレイヤーの統計を更新するためのバックエンド関数を呼び出す
 export async function updatePlayerStats(player_id: string) {
-  console.log("-console by copilot-\n", "統計更新関数が呼び出されました", { player_id });
   
   try {
     const response = await fetch('https://axxejytflmqnottoambp.supabase.co/functions/v1/Update_stats', {
@@ -36,10 +35,8 @@ export async function updatePlayerStats(player_id: string) {
       throw new Error(`統計更新に失敗しました: ${response.status}`);
     }
     
-    console.log("-console by copilot-\n", "統計更新に成功しました", { player_id });
     return true;
   } catch (error) {
-    console.error("-console by copilot-\n", "統計更新エラー:", error);
     return false;
   }
 }

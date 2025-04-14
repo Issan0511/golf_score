@@ -123,7 +123,6 @@ export function useScoreData() {
 
       // プレイヤーの統計を更新
       if (roundData.player_id) {
-        console.log("-console by copilot-\n", "統計更新を開始します", { player_id: roundData.player_id });
         await updatePlayerStats(roundData.player_id);
       }
 
@@ -141,7 +140,6 @@ export function useScoreData() {
         description: "データの送信中にエラーが発生しました",
         variant: "destructive",
       })
-      console.error("-console by copilot-\n", "Submission error:", error)
     } finally {
       setSubmitting(false)
     }

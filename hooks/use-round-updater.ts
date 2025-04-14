@@ -85,7 +85,6 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
       
       // プレイヤーの統計を更新
       if (roundData.player_id) {
-        console.log("-console by copilot-\n", "統計更新を開始します", { player_id: roundData.player_id });
         await updatePlayerStats(roundData.player_id);
       }
 
@@ -98,7 +97,6 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
       // プレイヤー詳細ページに遷移する
       router.push(`/player/${roundData.player_id}`)
     } catch (error) {
-      console.error("-console by copilot-\n", "Update error:", error);
       toast({
         title: "エラー",
         description: "ラウンド更新中にエラーが発生しました",
