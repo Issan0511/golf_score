@@ -1,11 +1,9 @@
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { supabase, updatePlayerStats } from "@/lib/supabase"
-import { useToast } from "@/components/ui/use-toast"
 import type { Round, Performance } from "@/lib/supabase"
 
 export function useScoreData() {
-  const { toast } = useToast()
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
@@ -87,11 +85,8 @@ export function useScoreData() {
     }
 
     if (missingFields.length > 0) {
-      toast({
-        title: "入力エラー",
-        description: `以下の項目を入力してください: ${missingFields.join(", ")}`,
-        variant: "destructive",
-      })
+      // toastの代わりにalertを使用
+      alert(`入力エラー: 以下の項目を入力してください: ${missingFields.join(", ")}`);
       return
     }
 
@@ -123,23 +118,24 @@ export function useScoreData() {
 
       // プレイヤーの統計を更新
       if (roundData.player_id) {
-        await updatePlayerStats(roundData.player_id);
+        try {
+          console.log("-console by copilot-\n", `プレイヤーID ${roundData.player_id} の統計更新を開始します`);
+          const result = await updatePlayerStats(roundData.player_id);
+          console.log("-console by copilot-\n", `統計更新結果:`, result);
+        } catch (statsError) {
+          console.error("-console by copilot-\n", "統計更新中にエラーが発生しましたが、スコア登録は完了しています:", statsError);
+          // 統計更新が失敗してもスコア登録は成功とする
+        }
       }
 
-      toast({
-        title: "登録完了",
-        description: "スコアが正常に登録されました",
-        variant: "default",
-      })
+      // toastの代わりにalertを使用
+      alert("登録完了: スコアが正常に登録されました");
       
       // プレイヤー詳細ページに遷移する
       router.push(`/player/${roundData.player_id}`)
     } catch (error) {
-      toast({
-        title: "エラー",
-        description: "データの送信中にエラーが発生しました",
-        variant: "destructive",
-      })
+      // toastの代わりにalertを使用
+      alert("エラー: データの送信中にエラーが発生しました");
     } finally {
       setSubmitting(false)
     }

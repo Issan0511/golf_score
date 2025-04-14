@@ -20,7 +20,6 @@ export const DistanceInputGroup = ({
   onSuccessChange,
   onTotalChange,
 }: DistanceInputGroupProps): React.ReactElement => {
-  console.log("-console by colipot-\n", `DistanceInputGroup(${title})レンダリング:`, { successValue, totalValue });
 
   // 成功率の計算
   const successRate = React.useMemo(() => {
@@ -33,13 +32,11 @@ export const DistanceInputGroup = ({
   // 入力値が変更されたときの処理
   const handleSuccessChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === '' ? null : Number.parseInt(e.target.value) || 0;
-    console.log("-console by colipot-\n", "成功数変更:", value);
     onSuccessChange(value);
   }, [onSuccessChange]);
 
   const handleTotalChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === '' ? null : Number.parseInt(e.target.value) || 0;
-    console.log("-console by colipot-\n", "総数変更:", value);
     onTotalChange(value);
   }, [onTotalChange]);
 

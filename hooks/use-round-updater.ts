@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { supabase, type Round, type Performance, updatePlayerStats } from "@/lib/supabase"
-import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { type HoleData } from "@/types/score"
 
@@ -46,11 +45,8 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
     
     // 不足している項目がある場合はエラーを表示
     if (missingFields.length > 0) {
-      toast({
-        title: "入力エラー",
-        description: `以下の必須項目が入力されていません: \n【${missingFields.join("、")}】`,
-        variant: "destructive",
-      })
+      // toastの代わりにalertを使用
+      alert(`入力エラー: 以下の項目を入力してください: ${missingFields.join(", ")}`);
       return
     }
 
@@ -85,23 +81,24 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
       
       // プレイヤーの統計を更新
       if (roundData.player_id) {
-        await updatePlayerStats(roundData.player_id);
+        try {
+          console.log("-console by copilot-\n", `プレイヤーID ${roundData.player_id} の統計更新を開始します`);
+          const result = await updatePlayerStats(roundData.player_id);
+          console.log("-console by copilot-\n", `統計更新結果:`, result);
+        } catch (statsError) {
+          console.error("-console by copilot-\n", "統計更新中にエラーが発生しましたが、ラウンド更新は完了しています:", statsError);
+          // 統計更新が失敗してもラウンド更新は成功とする
+        }
       }
 
-      toast({
-        title: "更新完了",
-        description: "ラウンドデータが正常に更新されました",
-        variant: "default",
-      })
+      // toastの代わりにalertを使用
+      alert("更新完了: ラウンドデータが正常に更新されました");
       
       // プレイヤー詳細ページに遷移する
       router.push(`/player/${roundData.player_id}`)
     } catch (error) {
-      toast({
-        title: "エラー",
-        description: "ラウンド更新中にエラーが発生しました",
-        variant: "destructive",
-      })
+      // toastの代わりにalertを使用
+      alert("エラー: ラウンド更新中にエラーが発生しました");
     } finally {
       setSubmitting(false)
     }

@@ -20,24 +20,95 @@ export type Performance = Database["public"]["Tables"]["performance"]["Row"];
 
 // プレイヤーの統計を更新するためのバックエンド関数を呼び出す
 export async function updatePlayerStats(player_id: string) {
+  console.log("-console by copilot-\n", `プレイヤーID: ${player_id}の統計を更新開始`);
   
   try {
-    const response = await fetch('https://axxejytflmqnottoambp.supabase.co/functions/v1/Update_stats', {
+    // 直接Supabase Functionsを呼び出す代わりに、内部APIルートを使用
+    const response = await fetch('/api/update-stats', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4eGVqeXRmbG1xbm90dG9hbWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQwMDI2MjIsImV4cCI6MjA1OTU3ODYyMn0.MfjD_Egv-YqyUNg5n47uruRvgPb2lefhMyIOstHDIG8',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ player_id })
     });
     
     if (!response.ok) {
+      console.error("-console by copilot-\n", `統計更新に失敗: ${response.status}`);
       throw new Error(`統計更新に失敗しました: ${response.status}`);
     }
     
+    const result = await response.json();
+    console.log("-console by copilot-\n", "統計更新結果:", result);
     return true;
   } catch (error) {
+    console.error("-console by copilot-\n", "統計更新中にエラーが発生しました:", error);
     return false;
+  }
+}
+
+/**
+ * プレイヤーの統計をバッチで更新する関数
+ * 複数のプレイヤーIDを一度に処理することができる
+ */
+export async function updateMultiplePlayerStats(player_ids: string[]) {
+  console.log("-console by copilot-\n", "複数プレイヤーの統計を更新中:", player_ids);
+
+  try {
+    // 各プレイヤーIDに対して順番に処理
+    const results = await Promise.all(
+      player_ids.map(async (player_id) => {
+        try {
+          const success = await updatePlayerStats(player_id);
+          return { player_id, success };
+        } catch (e) {
+          console.error("-console by copilot-\n", `プレイヤーID: ${player_id}の統計更新に失敗:`, e);
+          return { player_id, success: false };
+        }
+      })
+    );
+
+    // 結果の集計
+    const successCount = results.filter(r => r.success).length;
+    console.log("-console by copilot-\n", `${successCount}/${player_ids.length}件の統計が更新されました`);
+    
+    return {
+      total: player_ids.length,
+      success: successCount,
+      details: results
+    };
+  } catch (error) {
+    console.error("-console by copilot-\n", "バッチ統計更新中にエラーが発生しました:", error);
+    return {
+      total: player_ids.length,
+      success: 0,
+      details: player_ids.map(id => ({ player_id: id, success: false }))
+    };
+  }
+}
+
+/**
+ * 最新の統計情報を取得する
+ * CORSの問題を回避するためにサーバーサイドで呼び出すことを推奨
+ */
+export async function fetchLatestStats(player_id: string) {
+  console.log("-console by copilot-\n", "プレイヤーの最新統計を取得中:", player_id);
+  
+  try {
+    const { data, error } = await supabase
+      .from("playerstats")
+      .select("*")
+      .eq("player_id", player_id)
+      .single();
+
+    if (error) {
+      console.error("-console by copilot-\n", "統計データ取得中にエラーが発生:", error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("-console by copilot-\n", "統計データ取得中に例外が発生:", error);
+    return null;
   }
 }
 
