@@ -74,8 +74,6 @@ export default function EditRoundPage() {
       setLoading(true);
       
       try {
-        console.log("-console by colipot-\n", `ラウンドデータを取得開始: ID=${id}`);
-        
         // ラウンド、パフォーマンス、プレイヤーデータを並列で取得
         const [roundData, performanceData, playersData] = await Promise.all([
           getRound(id),
@@ -93,8 +91,6 @@ export default function EditRoundPage() {
           router.push("/players")
           return
         }
-
-        console.log("-console by colipot-\n", "取得したラウンドデータ:", roundData);
         
         // ホールデータがあるか確認
         const hasHolesData = Array.isArray(roundData.holes) && roundData.holes.length > 0;
@@ -109,7 +105,6 @@ export default function EditRoundPage() {
 
         // パフォーマンスデータをセット
         if (performanceData) {
-          console.log("-console by colipot-\n", "取得したパフォーマンスデータ:", performanceData);
           Object.keys(performanceData).forEach(key => {
             if (key !== 'id' && key !== 'created_at') {
               handlePerformanceChange(key as any, performanceData[key as keyof typeof performanceData]);
@@ -119,7 +114,6 @@ export default function EditRoundPage() {
 
         // ホールデータがあればセット - 一度だけ実行
         if (hasHolesData && !holesDataSet.current) {
-          console.log("-console by colipot-\n", `ホールデータをセット: ${roundData.holes.length}個`);
           holesDataSet.current = true;
           setHolesData(roundData.holes);
         }
@@ -150,26 +144,18 @@ export default function EditRoundPage() {
   // パフォーマンスデータを更新する関数
   const calculateAndUpdatePerformance = () => {
     if (hasHoles === false) {
-      console.warn("-console by colipot-\n", "ホールデータがありません。パフォーマンス計算をスキップします。");
       return;
     }
-    console.log("-console by colipot-\n", `パフォーマンス計算実行開始: holes=${holes.length}個`);
     const calculatedPerformance = calculatePerformanceFromHoles();
     
-    console.log("-console by colipot-\n", "計算されたパフォーマンスデータ:", calculatedPerformance);
-    
     // パフォーマンスデータを同期的に更新 - タイミングの問題を解決
-    console.log("-console by colipot-\n", "パフォーマンスデータの更新処理を開始");
     Object.keys(calculatedPerformance).forEach(key => {
       const typedKey = key as keyof typeof calculatedPerformance;
       const value = calculatedPerformance[typedKey];
-      console.log("-console by colipot-\n", `パフォーマンス更新: ${key} = ${value}`);
       handlePerformanceChange(typedKey, value);
     });
-    console.log("-console by colipot-\n", "パフォーマンスデータの更新処理が完了");
     
     // 更新後のパフォーマンスデータを確認
-    console.log("-console by colipot-\n", "更新後のパフォーマンスデータ:", performanceData);
   };
 
   // カスタム更新関数 - 既存のIDを使用して更新
@@ -193,11 +179,9 @@ export default function EditRoundPage() {
 
   // タブが変更されたときのハンドラー
   const handleTabChange = (value: string) => {
-    console.log("-console by colipot-\n", `タブ変更: ${activeTab} -> ${value}`);
     
     // パフォーマンスタブが選択された場合、データを更新
     if (value === "performance") {
-      console.log("-console by colipot-\n", "パフォーマンスタブ選択: パフォーマンス計算を実行します");
       calculateAndUpdatePerformance();
     }
     
@@ -213,7 +197,6 @@ export default function EditRoundPage() {
 
   // タブ変更時のデバッグログ
   useEffect(() => {
-    console.log("-console by colipot-\n", `activeTab変更: ${activeTab}`);
   }, [activeTab]);
 
   if (loading) {

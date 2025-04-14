@@ -17,7 +17,6 @@ export function usePerformanceCalculator({ holes, handleRoundChange }: Performan
   
   // コンポーネント再レンダリング時にholesRefを更新
   if (holes !== holesRef.current) {
-    console.log("-console by colipot-\n", `holesRefを更新します: ${holes.length}個のホール`);
     holesRef.current = holes;
   }
 
@@ -28,7 +27,6 @@ export function usePerformanceCalculator({ holes, handleRoundChange }: Performan
   const calculatePerformanceFromHoles = useCallback((): Partial<Performance> => {
     // 現在のholesRefを使用
     const currentHoles = holesRef.current;
-    console.log("-console by colipot-\n", `パフォーマンス計算実行: holesRef=${currentHoles.length}個のホール`);
     
     const performance: Partial<Performance> = {
       one_putts: 0,
@@ -119,7 +117,6 @@ export function usePerformanceCalculator({ holes, handleRoundChange }: Performan
 
     // roundDataにスコア合計とパット数を反映（任意）
     if (handleRoundChange) {
-      console.log("-console by colipot-\n", `スコア計算結果: 総スコア=${totalScore}, OUT=${frontNineScore}, IN=${backNineScore}, パット=${totalPutts}`);
       
       // 非同期でhandleRoundChangeを呼び出して再レンダリングの連鎖を防ぐ
       setTimeout(() => {

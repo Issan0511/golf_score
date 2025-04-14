@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase"
  * ラウンドデータを取得する
  */
 export async function getRound(id: string) {
-  console.log("-console by colipot-\n", `ラウンドID ${id} のデータを取得します`);
   
   const { data, error } = await supabase
     .from("rounds")
@@ -24,7 +23,6 @@ export async function getRound(id: string) {
  * パフォーマンスデータを取得する
  */
 export async function getPerformance(id: string) {
-  console.log("-console by colipot-\n", `パフォーマンスID ${id} のデータを取得します`);
   
   const { data, error } = await supabase
     .from("performance")

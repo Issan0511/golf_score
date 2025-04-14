@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { supabase, type Round, type Performance } from "@/lib/supabase"
+import { supabase, type Round, type Performance, updatePlayerStats } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { type HoleData } from "@/types/score"
@@ -62,8 +62,6 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
         ...roundData,
         holes: holes // ホールデータを追加
       }
-      
-      console.log("-console by colipot-\n", `更新するデータ:`, roundDataWithHoles);
 
       // Update round data
       const { error: roundError } = await supabase
@@ -84,6 +82,12 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
       if (perfError) {
         throw perfError;
       }
+      
+      // プレイヤーの統計を更新
+      if (roundData.player_id) {
+        console.log("-console by copilot-\n", "統計更新を開始します", { player_id: roundData.player_id });
+        await updatePlayerStats(roundData.player_id);
+      }
 
       toast({
         title: "更新完了",
@@ -94,7 +98,7 @@ export function useRoundUpdater({ id }: RoundUpdaterProps) {
       // プレイヤー詳細ページに遷移する
       router.push(`/player/${roundData.player_id}`)
     } catch (error) {
-      console.error("Update error:", error);
+      console.error("-console by copilot-\n", "Update error:", error);
       toast({
         title: "エラー",
         description: "ラウンド更新中にエラーが発生しました",

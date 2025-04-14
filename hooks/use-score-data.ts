@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+import { supabase, updatePlayerStats } from "@/lib/supabase"
 import { useToast } from "@/components/ui/use-toast"
 import type { Round, Performance } from "@/lib/supabase"
 
@@ -44,18 +44,15 @@ export function useScoreData() {
   const [holes, setHoles] = useState<any[]>([])
 
   const handleRoundChange = (field: keyof Round, value: any) => {
-    console.log("-console by colipot-\n", `ラウンドデータ更新: ${String(field)} = ${value}`);
     setRoundData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handlePerformanceChange = (field: keyof Performance, value: any) => {
-    console.log("-console by colipot-\n", `パフォーマンスデータ更新: ${String(field)} = ${value}`);
     setPerformanceData((prev) => ({ ...prev, [field]: value }))
   }
 
   // パフォーマンスデータを一括で設定する関数を追加
   const setPerformanceDataBulk = useCallback((data: Partial<Performance>) => {
-    console.log("-console by colipot-\n", `パフォーマンスデータを一括設定:`, data);
     // 既存のパフォーマンスデータとマージして更新
     setPerformanceData(prev => ({
       ...prev,
@@ -65,7 +62,6 @@ export function useScoreData() {
 
   // ホールデータを設定するための関数
   const setHolesData = (holesData: any[]) => {
-    console.log("-console by colipot-\n", `ホールデータを設定します: ${holesData.length}ホール`);
     setHoles(holesData)
   }
 
@@ -107,8 +103,6 @@ export function useScoreData() {
         ...roundData,
         holes: holes,
       }
-      
-      console.log("-console by colipot-\n", `送信するデータ: `, roundDataWithHoles);
 
       // Insert round data
       const { data: roundResult, error: roundError } = await supabase.from("rounds").insert(roundDataWithHoles).select().single()
@@ -127,6 +121,12 @@ export function useScoreData() {
         throw perfError;
       }
 
+      // プレイヤーの統計を更新
+      if (roundData.player_id) {
+        console.log("-console by copilot-\n", "統計更新を開始します", { player_id: roundData.player_id });
+        await updatePlayerStats(roundData.player_id);
+      }
+
       toast({
         title: "登録完了",
         description: "スコアが正常に登録されました",
@@ -141,7 +141,7 @@ export function useScoreData() {
         description: "データの送信中にエラーが発生しました",
         variant: "destructive",
       })
-      console.error("Submission error:", error)
+      console.error("-console by copilot-\n", "Submission error:", error)
     } finally {
       setSubmitting(false)
     }

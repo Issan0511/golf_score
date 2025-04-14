@@ -69,7 +69,6 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   // 外部からのラウンド数が変更された場合、内部のroundDataを更新
   useEffect(() => {
     if (externalRoundCount !== undefined && externalRoundCount !== previousRoundCountRef.current) {
-      console.log("-console by colipot-\n", `外部から渡されたラウンド数が変更されました: ${externalRoundCount} (前回: ${previousRoundCountRef.current})`);
       
       previousRoundCountRef.current = externalRoundCount;
       
@@ -89,9 +88,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   // ラウンド数が変更された時にホール配列を調整する
   useEffect(() => {
     if (roundData.round_count) {
-      console.log("-console by colipot-\n", `ラウンド数が変更されました: ${roundData.round_count}`);
       const totalHoles = Math.floor(roundData.round_count * 18);
-      console.log("-console by colipot-\n", `新しい総ホール数: ${totalHoles}`);
       
       // 現在のホールデータを保持しながら、新しいラウンド数に対応するホール配列を作成
       setHoles(prevHoles => {
@@ -100,7 +97,6 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
         
         // ホール配列のサイズ調整（拡大）
         if (totalHoles > prevHoles.length) {
-          console.log("-console by colipot-\n", `ホール配列を拡大: ${prevHoles.length} => ${totalHoles}`);
           for (let i = prevHoles.length; i < totalHoles; i++) {
             newHoles.push({
               ...defaultHoleData,
@@ -110,7 +106,6 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
         } 
         // ホール配列のサイズ調整（縮小）
         else if (totalHoles < prevHoles.length) {
-          console.log("-console by colipot-\n", `ホール配列を縮小: ${prevHoles.length} => ${totalHoles}`);
           newHoles.splice(totalHoles);
         }
         
@@ -119,7 +114,6 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
       
       // 現在選択しているホールが新しい総ホール数を超えている場合は調整
       if (currentHole > totalHoles) {
-        console.log("-console by colipot-\n", `現在のホール(${currentHole})が新しい総ホール数(${totalHoles})を超えています。調整します。`);
         setCurrentHole(totalHoles);
       }
     }
@@ -164,7 +158,6 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
   // 総ホール数を計算（ラウンド数に基づく）
   const getTotalHoles = (): number => {
     const totalHoles = Math.floor((roundData.round_count || 1) * 18);
-    console.log("-console by colipot-\n", `getTotalHoles が呼び出されました: ${totalHoles} (ラウンド数: ${roundData.round_count})`);
     return totalHoles;
   }
 
@@ -269,8 +262,6 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
       outScore = holes.slice(0, 9).reduce((sum, hole) => sum + hole.score, 0);
       inScore = holes.slice(9, 18).reduce((sum, hole) => sum + hole.score, 0);
     }
-
-    console.log("-console by colipot-\n", `スコア計算結果: 総スコア=${totalScore}, OUT=${outScore}, IN=${inScore}, ラウンド数=${roundData.round_count}`);
 
     return {
       ...roundData,

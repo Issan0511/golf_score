@@ -24,12 +24,10 @@ export function PerformanceTabContent({
   handleSubmit,
   navigateToPrevTab,
 }: PerformanceTabContentProps) {
-  console.log("-console by colipot-\n", "PerformanceTabContentがレンダリングされました", performanceData);
   
   
   // パフォーマンスデータが空またはnullの場合の処理
   if (!performanceData) {
-    console.log("-console by colipot-\n", "パフォーマンスデータが null または undefined です");
     return (
       <Card className="border-0 shadow-lg overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-golf-50 to-white border-b border-gray-100">

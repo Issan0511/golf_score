@@ -6,7 +6,7 @@
 
 - デバッグしやすいように実装した各機能、ロジックにconsole.logを追加する。この時以下の注意を守ること
   
-  - console.log(“-console by colipot-\n”, )から始める。
+  - console.log(“-console by copilot-\n”, )から始める。
   
   - 新たなオブジェクトを定義してそれを扱う場合そのオブジェクトをコンソールに追加する
   
