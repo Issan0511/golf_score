@@ -51,13 +51,16 @@ const defaultHoleData: HoleData = {
 
 type UseHoleDataProps = {
   externalRoundCount?: number; // 外部から渡されるラウンド数
+  externalHoles?: HoleData[]; // 外部から渡されるホールデータ
 }
 
-export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
+export function useHoleData({ externalRoundCount, externalHoles }: UseHoleDataProps = {}) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   // 外部から渡されたラウンド数を保持するref
   const previousRoundCountRef = useRef(externalRoundCount);
+  // 外部から渡されたホールデータを保持するref
+  const externalHolesRef = useRef(externalHoles);
 
   // Round data
   const [roundData, setRoundData] = useState<Partial<Round>>({
@@ -79,11 +82,28 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
     }
   }, [externalRoundCount]); // 依存配列からroundData.round_countを削除
 
-  // Hole data - デフォルトは1ラウンド分の18ホール
+  // Hole data - 外部から渡されたホールデータがあればそれを使用、なければデフォルトの18ホール
   const [holes, setHoles] = useState<HoleData[]>(
-    Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 }))
+    externalHoles || Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 }))
   )
   const [currentHole, setCurrentHole] = useState(1)
+
+  // 外部からのホールデータが変更された場合、内部のholesを更新
+  useEffect(() => {
+    if (externalHoles && externalHoles.length > 0) {
+      
+      // deepEqualで比較するためにJSON文字列化して比較（循環参照などがなければ有効）
+      const currentExternalJson = JSON.stringify(externalHolesRef.current || []);
+      const newExternalJson = JSON.stringify(externalHoles);
+      
+      if (currentExternalJson !== newExternalJson) {
+        // 参照の更新を先に行う
+        externalHolesRef.current = externalHoles;
+        // stateの更新
+        setHoles(externalHoles);
+      }
+    }
+  }, [externalHoles]);
 
   // ラウンド数が変更された時にホール配列を調整する
   useEffect(() => {
@@ -272,7 +292,13 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
     }
   }
 
-  // handleSubmitは削除 - useScoreDataと機能重複しているため
+  // 外部からホールデータを設定するための関数
+  const setExternalHoles = (newHoles: HoleData[]) => {
+    if (newHoles && newHoles.length > 0) {
+      setHoles(newHoles);
+      externalHolesRef.current = newHoles;
+    }
+  };
 
   return {
     roundData,
@@ -286,6 +312,7 @@ export function useHoleData({ externalRoundCount }: UseHoleDataProps = {}) {
     calculatePerformanceData,
     calculateRoundData,
     setCurrentHole,
-    getTotalHoles  // 総ホール数を取得する関数を追加
+    getTotalHoles,  // 総ホール数を取得する関数を追加
+    setExternalHoles, // 外部からホールデータを設定する関数を追加
   }
 }

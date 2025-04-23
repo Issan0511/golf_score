@@ -54,8 +54,12 @@ export default function EditRoundPage() {
     goToNextHole,
     goToPrevHole,
     setCurrentHole,
-    getTotalHoles
-  } = useHoleData({ externalRoundCount: roundData.round_count })
+    getTotalHoles,
+    setExternalHoles // 新しく追加した関数をインポート
+  } = useHoleData({ 
+    externalRoundCount: roundData.round_count,
+    externalHoles: roundData.holes // 外部からホールデータを渡す
+  })
 
   // ラウンド更新用フックを使用
   const { updateRoundData, submitting: updaterSubmitting } = useRoundUpdater({ id })
@@ -74,6 +78,7 @@ export default function EditRoundPage() {
       setLoading(true);
       
       try {
+        
         // ラウンド、パフォーマンス、プレイヤーデータを並列で取得
         const [roundData, performanceData, playersData] = await Promise.all([
           getRound(id),
@@ -95,7 +100,7 @@ export default function EditRoundPage() {
         // ホールデータがあるか確認
         const hasHolesData = Array.isArray(roundData.holes) && roundData.holes.length > 0;
         setHasHoles(hasHolesData);
-
+        
         // useScoreDataフックにデータをセット
         Object.keys(roundData).forEach(key => {
           if (key !== 'holes') {
@@ -112,17 +117,18 @@ export default function EditRoundPage() {
           });
         }
 
-        // ホールデータがあればセット - 一度だけ実行
-        if (hasHolesData && !holesDataSet.current) {
-          holesDataSet.current = true;
-          setHolesData(roundData.holes);
+        // ホールデータがあればセット
+        if (hasHolesData) {
+          // 重要: データフローを整理するため、一方のフックでのみholes管理を行う
+          // setHolesData(roundData.holes); // <-- useScoreDataへの設定を一時停止
+          setExternalHoles(roundData.holes); // useHoleDataのみでホールデータを管理
         }
 
         // プレイヤーデータをセット
         setPlayers(playersData);
         
+        
       } catch (error) {
-        console.error("Error loading round data:", error);
         toast({
           title: "エラー",
           description: "データの読み込み中にエラーが発生しました",
@@ -139,7 +145,7 @@ export default function EditRoundPage() {
     return () => {
       holesDataSet.current = false;
     };
-  }, [id, router]); // handleRoundChange, handlePerformanceChange, setHolesDataを依存配列から削除
+  }, [id, router ]);
 
   // パフォーマンスデータを更新する関数
   const calculateAndUpdatePerformance = () => {
@@ -198,6 +204,10 @@ export default function EditRoundPage() {
   // タブ変更時のデバッグログ
   useEffect(() => {
   }, [activeTab]);
+
+  useEffect(() => {
+    // ホールデータの変更を監視
+  }, [holes]);
 
   if (loading) {
     return (

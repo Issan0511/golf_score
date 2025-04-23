@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { HoleInputTabContentProps, HoleData } from "@/types/score"
@@ -26,6 +26,11 @@ export function HoleInputTabContent({
   // ラウンド数に基づいた総ホール数を計算
   // getTotalHolesが提供されていればそれを使用、なければラウンド数から計算
   const totalHoles = getTotalHoles ? getTotalHoles() : 18 * roundCount;
+
+  // マウント時と更新時に実行されるロジック
+  useEffect(() => {
+    // コンポーネントのマウント/更新ロジック
+  }, [holes, currentHole]);
 
   const getShortestApproachDistance = () => {
     const hole = holes[currentHole - 1]
@@ -81,21 +86,14 @@ export function HoleInputTabContent({
 
   // ホール入力完了時のハンドラー
   const handleCompleteHoleInput = () => {
-    console.log("現在のホールデータ:", JSON.stringify(holes, null, 2));
-    
     // パフォーマンスデータを更新する関数が提供されていれば実行
     if (calculateAndUpdatePerformance) {
       calculateAndUpdatePerformance();
-    } else {
-      console.log("calculateAndUpdatePerformance関数がありません");
     }
     
     // パフォーマンスタブに遷移する関数が提供されていれば実行
     if (navigateToPerformanceTab) {
       navigateToPerformanceTab();
-    } else {
-      console.log("navigateToPerformanceTab関数がありません。通常のsubmit処理を実行します");
-      handleSubmit();
     }
   };
 

@@ -5,7 +5,6 @@ import { NextResponse } from 'next/server';
  * CORSの問題を回避するためのサーバーサイドエンドポイント
  */
 export async function POST(request: Request) {
-  console.log("-console by copilot-\n", "統計更新APIがリクエストされました");
 
   try {
     // リクエストボディからプレイヤーIDを取得
@@ -18,7 +17,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("-console by copilot-\n", `プレイヤーID ${player_id} の統計を更新します`);
 
     // Supabase Edgeファンクションを呼び出す
     const response = await fetch(
@@ -37,18 +35,15 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("-console by copilot-\n", `統計更新に失敗しました: ${response.status}`, result);
       return NextResponse.json(
         { success: false, error: `統計更新に失敗しました: ${response.statusText}` },
         { status: response.status }
       );
     }
 
-    console.log("-console by copilot-\n", "統計更新に成功しました", result);
     return NextResponse.json({ success: true, data: result });
 
   } catch (error) {
-    console.error("-console by copilot-\n", "統計更新中にエラーが発生しました:", error);
     return NextResponse.json(
       { success: false, error: "統計更新中にエラーが発生しました" },
       { status: 500 }

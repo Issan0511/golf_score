@@ -5,7 +5,6 @@ import { NextResponse } from 'next/server';
  * CORSの問題を回避するためのサーバーサイドエンドポイント
  */
 export async function POST(request: Request) {
-  console.log("-console by copilot-\n", "バッチ統計更新APIがリクエストされました");
 
   try {
     // リクエストボディからプレイヤーIDの配列を取得
@@ -18,7 +17,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("-console by copilot-\n", `${player_ids.length}人のプレイヤーの統計を更新します`);
 
     // 各プレイヤーに対して順次処理
     const results = await Promise.allSettled(
@@ -37,14 +35,12 @@ export async function POST(request: Request) {
           );
 
           if (!response.ok) {
-            console.error("-console by copilot-\n", `プレイヤーID ${player_id} の統計更新に失敗: ${response.status}`);
             return { player_id, success: false, status: response.status };
           }
 
           const data = await response.json();
           return { player_id, success: true, data };
         } catch (error) {
-          console.error("-console by copilot-\n", `プレイヤーID ${player_id} の処理中にエラー:`, error);
           return { player_id, success: false, error: "処理中にエラーが発生しました" };
         }
       })
@@ -54,7 +50,6 @@ export async function POST(request: Request) {
     const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
     const failureCount = player_ids.length - successCount;
 
-    console.log("-console by copilot-\n", `バッチ処理完了: 成功=${successCount}, 失敗=${failureCount}`);
 
     // 整形された結果を返す
     const formattedResults = results.map((result) => {
@@ -76,7 +71,6 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
-    console.error("-console by copilot-\n", "バッチ処理中に予期せぬエラーが発生:", error);
     return NextResponse.json(
       { success: false, error: "バッチ処理中にエラーが発生しました" },
       { status: 500 }

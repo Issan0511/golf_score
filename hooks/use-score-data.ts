@@ -119,11 +119,8 @@ export function useScoreData() {
       // プレイヤーの統計を更新
       if (roundData.player_id) {
         try {
-          console.log("-console by copilot-\n", `プレイヤーID ${roundData.player_id} の統計更新を開始します`);
-          const result = await updatePlayerStats(roundData.player_id);
-          console.log("-console by copilot-\n", `統計更新結果:`, result);
+          await updatePlayerStats(roundData.player_id);
         } catch (statsError) {
-          console.error("-console by copilot-\n", "統計更新中にエラーが発生しましたが、スコア登録は完了しています:", statsError);
           // 統計更新が失敗してもスコア登録は成功とする
         }
       }
