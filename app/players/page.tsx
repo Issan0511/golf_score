@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react"
-import Image from "next/image"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { supabase, type Player, type PlayerStats } from "@/lib/supabase"
-import { School, Calendar, MapPin, Trophy } from "lucide-react"
+import { PlusCircle } from "lucide-react"
 import { useLoadingNavigation } from "@/hooks/use-loading-navigation"
 import { LoadingModal } from "@/components/ui/loading-modal"
+import { Button } from "@/components/ui/button"
+import { PlayerForm } from "@/components/player/PlayerForm"
+import { PlayerCard } from "@/components/player/PlayerCard"
 
 async function getPlayers() {
   try {
@@ -28,14 +27,26 @@ async function getPlayers() {
 }
 
 async function getPlayerStats(playerId: string) {
-  const { data, error } = await supabase.from("playerstats").select("*").eq("id", playerId).single()
+  try {
+    const { data, error } = await supabase.from("playerstats").select("*").eq("id", playerId).single();
 
-  if (error) {
-    console.error(`Error fetching stats for player ${playerId}:`, error)
-    return null
+    // 新規追加したプレイヤーは統計情報がないのでエラーは正常
+    if (error) {
+      // データが見つからない場合は警告レベルのログにし、nullを返す
+      if (error.code === 'PGRST116') {
+        console.log("-console by copilot-\n", `No stats found for player ${playerId} - This is normal for new players`);
+      } else {
+        // その他のエラーの場合はエラーログを出力
+        console.error(`Error fetching stats for player ${playerId}:`, error);
+      }
+      return null;
+    }
+
+    return data as PlayerStats;
+  } catch (e) {
+    console.error(`Exception fetching stats for player ${playerId}:`, e);
+    return null;
   }
-
-  return data as PlayerStats
 }
 
 export default function PlayersPage() {
@@ -43,30 +54,37 @@ export default function PlayersPage() {
   const [playersWithStats, setPlayersWithStats] = useState<(Player & { stats: PlayerStats | null })[]>([])
   const [loading, setLoading] = useState(true)
   const { isNavigating, navigate } = useLoadingNavigation()
+  
+  // モーダル関連の状態
+  const [isAddPlayerModalOpen, setIsAddPlayerModalOpen] = useState(false)
+  const [isEditPlayerModalOpen, setIsEditPlayerModalOpen] = useState(false)
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
 
   // データの取得
-  useEffect(() => {
-    async function fetchPlayers() {
-      setLoading(true)
-      try {
-        const playersData = await getPlayers()
-        setPlayers(playersData)
-        
-        // 全プレイヤーの統計情報を並行で取得
-        const playersWithStatsData = await Promise.all(
-          playersData.map(async (player) => {
-            const stats = await getPlayerStats(player.id)
-            return { ...player, stats }
-          })
-        )
-        setPlayersWithStats(playersWithStatsData)
-      } catch (error) {
-        console.error("Error loading players:", error)
-      } finally {
-        setLoading(false)
-      }
+  const fetchPlayers = async () => {
+    setLoading(true)
+    try {
+      const playersData = await getPlayers()
+      setPlayers(playersData)
+      
+      console.log("-console by copilot-\n", "Fetched players:", playersData.length)
+      
+      // 全プレイヤーの統計情報を並行で取得
+      const playersWithStatsData = await Promise.all(
+        playersData.map(async (player) => {
+          const stats = await getPlayerStats(player.id)
+          return { ...player, stats }
+        })
+      )
+      setPlayersWithStats(playersWithStatsData)
+    } catch (error) {
+      console.error("Error loading players:", error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchPlayers()
   }, [])
   
@@ -103,6 +121,17 @@ export default function PlayersPage() {
     }
   });
 
+  // プレイヤー追加または更新後のコールバック
+  const handlePlayerChanged = () => {
+    fetchPlayers() // プレイヤーリストを再取得
+  }
+  
+  // 編集ボタンがクリックされたときの処理
+  const handleEditPlayer = (player: Player) => {
+    setSelectedPlayer(player)
+    setIsEditPlayerModalOpen(true)
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <LoadingModal isLoading={loading || isNavigating} message={loading ? "プレイヤーデータを読み込み中..." : "詳細ページに移動中..."} />
@@ -113,6 +142,33 @@ export default function PlayersPage() {
           ゴルフ部の全メンバーを一覧で表示しています。各プレイヤーのプロフィールや基本統計情報を確認できます。
         </p>
       </div>
+      
+      <div className="mb-6 flex justify-center">
+        <Button 
+          onClick={() => setIsAddPlayerModalOpen(true)}
+          className="bg-golf-600 hover:bg-golf-700 text-white"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          プレイヤーを追加
+        </Button>
+      </div>
+
+      {/* 新規追加モーダル */}
+      <PlayerForm 
+        isOpen={isAddPlayerModalOpen}
+        onClose={() => setIsAddPlayerModalOpen(false)}
+        onSuccess={handlePlayerChanged}
+        mode="create"
+      />
+      
+      {/* 編集モーダル */}
+      <PlayerForm 
+        isOpen={isEditPlayerModalOpen}
+        onClose={() => setIsEditPlayerModalOpen(false)}
+        onSuccess={handlePlayerChanged}
+        player={selectedPlayer}
+        mode="edit"
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {sortedPlayers.map((player) => (
@@ -122,115 +178,11 @@ export default function PlayersPage() {
             stats={player.stats} 
             currentFiscalYear={currentFiscalYear}
             onViewDetails={() => navigate(`/player/${player.id}`)}
+            onEdit={handleEditPlayer}
           />
         ))}
       </div>
     </div>
-  )
-}
-
-function PlayerCard({ 
-  player, 
-  stats, 
-  currentFiscalYear,
-  onViewDetails 
-}: { 
-  player: Player; 
-  stats: PlayerStats | null;
-  currentFiscalYear: number;
-  onViewDetails: () => void;
-}) {
-  // 回生（学年）を計算
-  let grade = 0
-  if (player.admission_year) {
-    grade = currentFiscalYear - player.admission_year + 1
-  }
-  
-  // 学年表示用の文字列（4回生より上はOB）
-  const gradeDisplay = player.admission_year 
-    ? (grade > 4 ? 'OB' : `${grade}回生`) 
-    : null
-    
-  // 回生に応じた色クラスを設定
-  const getBadgeColorClass = (grade: number): string => {
-    if (grade > 4) return 'bg-gray-700 hover:bg-gray-800'; // OB
-    switch (grade) {
-      case 1: return 'bg-blue-500 hover:bg-blue-600';      // 1回生
-      case 2: return 'bg-emerald-500 hover:bg-emerald-600'; // 2回生
-      case 3: return 'bg-amber-500 hover:bg-amber-600';    // 3回生
-      case 4: return 'bg-red-500 hover:bg-red-600';        // 4回生
-      default: return 'bg-golf-500 hover:bg-golf-600';     // デフォルト
-    }
-  }
-  
-  const badgeColorClass = player.admission_year ? getBadgeColorClass(grade) : 'bg-golf-500 hover:bg-golf-600';
-
-  return (
-    <Card className="overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-white">
-      <CardHeader className="p-0">
-        <div className="h-48 w-full relative bg-gradient-to-br from-golf-100 to-golf-50">
-          <Image
-            src={player.image_url || "/placeholder.svg?height=192&width=384"}
-            alt={player.name}
-            fill
-            className="object-cover"
-          />
-          {gradeDisplay && (
-            <div className="absolute top-3 left-3">
-              <Badge className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${badgeColorClass}`}>
-                {gradeDisplay}
-              </Badge>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="p-5">
-        <h3 className="text-xl font-bold mb-3 text-golf-800">{player.name}</h3>
-        <div className="space-y-2 text-sm text-gray-600">
-          {player.department && (
-            <div className="flex items-center">
-              <School className="h-4 w-4 mr-2 text-golf-500" />
-              <span>{player.department}</span>
-            </div>
-          )}
-          {player.admission_year && (
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-2 text-golf-500" />
-              <span>{player.admission_year}年入学 {gradeDisplay && (
-                <span className={`ml-1 text-xs font-semibold ${
-                  grade > 4 ? 'text-gray-700' : 
-                  grade === 1 ? 'text-blue-600' : 
-                  grade === 2 ? 'text-emerald-600' :
-                  grade === 3 ? 'text-amber-600' : 
-                  grade === 4 ? 'text-red-600' : ''
-                }`}>({gradeDisplay})</span>
-              )}</span>
-            </div>
-          )}
-          {player.origin && (
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2 text-golf-500" />
-              <span>{player.origin}出身</span>
-            </div>
-          )}
-          {stats?.avg_score && (
-            <div className="flex items-center">
-              <Trophy className="h-4 w-4 mr-2 text-golf-500" />
-              <span>平均スコア: {stats.avg_score.toFixed(1)}</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="bg-gray-50 p-4 border-t border-gray-100">
-        <Button
-          variant="outline"
-          className="w-full border-golf-500 text-golf-600 hover:bg-golf-50 hover:text-golf-700 transition-colors duration-300"
-          onClick={onViewDetails}
-        >
-          詳細を見る
-        </Button>
-      </CardFooter>
-    </Card>
   )
 }
 
