@@ -47,6 +47,55 @@ export function HoleInputTabContent({
 
   const handleShotCountChange = (field: string, value: number) => {
     handleHoleChange(field, value)
+    
+    // 変更後のホールデータを取得
+    const updatedHoleData = holes[currentHole - 1];
+    
+    // -console by copilot-
+    console.log("-console by copilot-\n", `Shot count changed: ${field} to ${value}`);
+    console.log("-console by copilot-\n", "Current hole data:", updatedHoleData);
+    
+    // フィールド名から距離を抽出 (例: shotCount30 -> 30)
+    const distanceChanged = field.replace('shotCount', '');
+    const successField = `shotsuccess${distanceChanged}`;
+    
+    // 距離のショット回数が0になった場合、その距離の成功値も0にリセット
+    if (value === 0) {
+      // -console by copilot-
+      console.log("-console by copilot-\n", `Resetting success value for ${distanceChanged} yards because count is 0`);
+      handleHoleChange(successField, 0);
+      
+      // リセット後のホールデータを取得
+      const afterResetHoleData = holes[currentHole - 1];
+      console.log("-console by copilot-\n", "Hole data after resetting success value:", afterResetHoleData);
+    }
+    // 距離のショット回数が0より大きい場合、他の距離の成功値をリセット
+    else if (value > 0) {
+      // すべての距離の成功値をリセット対象として準備
+      const resetFields = [
+        'shotsuccess30', 
+        'shotsuccess80', 
+        'shotsuccess120', 
+        'shotsuccess160', 
+        'shotsuccess180', 
+        'shotsuccess181plus'
+      ];
+      
+      // 現在の距離に対応する成功フィールド以外をすべて0にリセット
+      resetFields.forEach(field => {
+        // 現在変更された距離に対応するフィールド以外をリセット
+        if (field !== successField) {
+          handleHoleChange(field, 0);
+        }
+      });
+      
+      // リセット後のホールデータを取得
+      const afterResetHoleData = holes[currentHole - 1];
+      
+      // -console by copilot-
+      console.log("-console by copilot-\n", `Reset success values except for ${distanceChanged} yards`);
+      console.log("-console by copilot-\n", "Hole data after reset:", afterResetHoleData);
+    }
   }
 
   const getSuccessValueForCurrentDistance = (distance: number): number => {
