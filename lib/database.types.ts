@@ -109,7 +109,7 @@ export interface Database {
           score_in: number | null
           putts: number | null
           weather: string | null
-          course_rate: number | null
+          "course_rate": number | null
           used_tee: string | null
           is_competition: boolean | null
           comment_to_subcoach: string | null
@@ -128,7 +128,7 @@ export interface Database {
           score_in?: number | null
           putts?: number | null
           weather?: string | null
-          course_rate?: number | null
+          "course_rate"?: number | null
           used_tee?: string | null
           is_competition?: boolean | null
           comment_to_subcoach?: string | null
@@ -147,7 +147,7 @@ export interface Database {
           score_in?: number | null
           putts?: number | null
           weather?: string | null
-          course_rate?: number | null
+          "course_rate"?: number | null
           used_tee?: string | null
           is_competition?: boolean | null
           comment_to_subcoach?: string | null

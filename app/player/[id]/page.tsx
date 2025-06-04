@@ -17,7 +17,7 @@ import {
   supabase,
   type Player,
   type PlayerStats,
-  type Rounds as Round,
+  type Round,
 } from "@/lib/supabase";
 import {
   ArrowLeft,
@@ -28,9 +28,11 @@ import {
   Cloud,
   Flag,
   GuitarIcon as Golf,
+  Share2,
 } from "lucide-react";
 import { useLoadingNavigation } from "@/hooks/use-loading-navigation";
 import { LoadingModal } from "@/components/ui/loading-modal";
+import { ScoreReportModal } from "@/components/score/ScoreReportModal";
 
 async function getPlayer(id: string) {
   const { data, error } = await supabase
@@ -465,73 +467,101 @@ function DistanceStatCard({
 }
 
 function RoundCard({ round }: { round: Round }) {
+  console.log("-console by copilot-\n", "RoundCard rendering for round:", round);
+  
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  const handleReportClick = (e: React.MouseEvent) => {
+    console.log("-console by copilot-\n", "Score report button clicked for round:", round.id);
+    e.stopPropagation();
+    setIsReportModalOpen(true);
+  };
+
   return (
-    <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <CardContent className="p-0">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-golf-50 to-white">
-          <div className="flex flex-wrap justify-between items-start gap-4">
-            <div>
-              <h3 className="font-bold text-lg text-golf-800">
-                {round.club_name || "コース名なし"}
-              </h3>
-              <p className="text-sm text-gray-500 flex items-center mt-1">
-                <Calendar className="h-4 w-4 mr-1" />
-                {round.date
-                  ? new Date(round.date).toLocaleDateString("ja-JP")
-                  : "日付なし"}
-              </p>
-            </div>
-            <div className="flex flex-col items-end">
-              <div className="text-3xl font-bold text-golf-700">
-                {round.score_total || "-"}
+    <>
+      <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-golf-50 to-white">
+            <div className="flex flex-wrap justify-between items-start gap-4">
+              <div>
+                <h3 className="font-bold text-lg text-golf-800">
+                  {round.club_name || "コース名なし"}
+                </h3>
+                <p className="text-sm text-gray-500 flex items-center mt-1">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {round.date
+                    ? new Date(round.date).toLocaleDateString("ja-JP")
+                    : "日付なし"}
+                </p>
               </div>
-              <div className="text-sm text-gray-600">
-                {round.round_count === 1 &&
-                round.score_out &&
-                round.score_in
-                  ? `${round.score_out} - ${round.score_in}`
-                  : ""}
+              <div className="flex flex-col items-end">
+                <div className="text-3xl font-bold text-golf-700">
+                  {round.score_total || "-"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {round.round_count === 1 &&
+                  round.score_out &&
+                  round.score_in
+                    ? `${round.score_out} - ${round.score_in}`
+                    : ""}
+                </div>
+                <div className="flex gap-2 mt-2">                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs border-green-500 text-green-600 hover:bg-green-50"
+                    onClick={handleReportClick}
+                  >
+                    <Share2 className="h-3 w-3 mr-1" />
+                    LINE共有
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs border-golf-500 text-golf-600 hover:bg-golf-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/edit/${round.id}`;
+                    }}
+                  >
+                    編集する
+                  </Button>
+                </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2 text-xs border-golf-500 text-golf-600 hover:bg-golf-50"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/edit/${round.id}`;
-                }}
-              >
-                編集する
-              </Button>
             </div>
           </div>
-        </div>
-        <div className="p-5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="flex items-center">
-              <Golf className="h-4 w-4 mr-2 text-golf-500" />
-              <span className="text-gray-700">パット: {round.putts || "-"}</span>
-            </div>
-            <div className="flex items-center">
-              <Cloud className="h-4 w-4 mr-2 text-golf-500" />
-              <span className="text-gray-700">天気: {round.weather || "-"}</span>
-            </div>
-            <div className="flex items-center">
-              <Flag className="h-4 w-4 mr-2 text-golf-500" />
-              <span className="text-gray-700">
-                使用ティー: {round.used_tee || "-"}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <Trophy className="h-4 w-4 mr-2 text-golf-500" />
-              <span className="text-gray-700">
-                ラウンド数: {round.round_count || "-"}
-              </span>
+          <div className="p-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="flex items-center">
+                <Golf className="h-4 w-4 mr-2 text-golf-500" />
+                <span className="text-gray-700">パット: {round.putts || "-"}</span>
+              </div>
+              <div className="flex items-center">
+                <Cloud className="h-4 w-4 mr-2 text-golf-500" />
+                <span className="text-gray-700">天気: {round.weather || "-"}</span>
+              </div>
+              <div className="flex items-center">
+                <Flag className="h-4 w-4 mr-2 text-golf-500" />
+                <span className="text-gray-700">
+                  使用ティー: {round.used_tee || "-"}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <Trophy className="h-4 w-4 mr-2 text-golf-500" />
+                <span className="text-gray-700">
+                  ラウンド数: {round.round_count || "-"}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <ScoreReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        round={round}
+      />
+    </>
   );
 }
 
