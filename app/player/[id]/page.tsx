@@ -29,10 +29,12 @@ import {
   Flag,
   GuitarIcon as Golf,
   Share2,
+  MessageCircle,
 } from "lucide-react";
 import { useLoadingNavigation } from "@/hooks/use-loading-navigation";
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ScoreReportModal } from "@/components/score/ScoreReportModal";
+import { getHoleMemos, HoleMemoListDialog } from "@/components/score/HoleMemoListDialog";
 
 async function getPlayer(id: string) {
   const { data, error } = await supabase
@@ -470,6 +472,8 @@ function RoundCard({ round }: { round: Round }) {
   console.log("-console by copilot-\n", "RoundCard rendering for round:", round);
   
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isMemoDialogOpen, setIsMemoDialogOpen] = useState(false);
+  const memoCount = getHoleMemos(round).length;
 
   const handleReportClick = (e: React.MouseEvent) => {
     console.log("-console by copilot-\n", "Score report button clicked for round:", round.id);
@@ -505,7 +509,22 @@ function RoundCard({ round }: { round: Round }) {
                     ? `${round.score_out} - ${round.score_in}`
                     : ""}
                 </div>
-                <div className="flex gap-2 mt-2">                  <Button
+                <div className="flex flex-wrap justify-end gap-2 mt-2">
+                  {memoCount > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs border-golf-500 text-golf-600 hover:bg-golf-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMemoDialogOpen(true);
+                      }}
+                    >
+                      <MessageCircle className="h-3 w-3 mr-1" />
+                      メモ {memoCount}件
+                    </Button>
+                  )}
+                  <Button
                     variant="outline"
                     size="sm"
                     className="text-xs border-green-500 text-green-600 hover:bg-green-50"
@@ -561,7 +580,11 @@ function RoundCard({ round }: { round: Round }) {
         onClose={() => setIsReportModalOpen(false)}
         round={round}
       />
+      <HoleMemoListDialog
+        open={isMemoDialogOpen}
+        onOpenChange={setIsMemoDialogOpen}
+        round={round}
+      />
     </>
   );
 }
-
