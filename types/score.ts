@@ -20,6 +20,7 @@ export type HoleData = {
   shotsuccess180: number
   shotsuccess181plus: number
   pinHit: boolean
+  memo: string
 }
 
 // 親コンポーネントからのprops
