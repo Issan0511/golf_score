@@ -13,11 +13,59 @@ import { useHoleData } from "@/hooks/use-hole-data"
 import { RoundInfoTabContent } from "@/components/score/RoundInfoTabContent"
 import { HoleInputTabContent } from "@/components/score/HoleInputTabContent"
 import { PerformanceTabContent } from "@/components/score/PerformanceTabContent"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  clearScoreDraft,
+  loadScoreDraft,
+  saveScoreDraft,
+  type ScoreDraft,
+} from "@/hooks/use-score-draft"
+
+function hasEnteredScoreData(
+  roundData: ReturnType<typeof useScoreData>["roundData"],
+  holes: ReturnType<typeof useHoleData>["holes"],
+  currentHole: number,
+  activeTab: string
+) {
+  return Boolean(
+    roundData.player_id ||
+    roundData.course_name ||
+    roundData.club_name ||
+    activeTab !== "round" ||
+    currentHole !== 1 ||
+    holes.some((hole) =>
+      hole.par !== 4 ||
+      hole.score !== 4 ||
+      hole.putts !== 2 ||
+      hole.fairwayHit ||
+      hole.pinHit ||
+      hole.ob1w !== 0 ||
+      hole.obOther !== 0 ||
+      hole.shotCount30 !== 0 ||
+      hole.shotCount80 !== 0 ||
+      hole.shotCount120 !== 0 ||
+      hole.shotCount160 !== 0 ||
+      hole.shotCount180 !== 0 ||
+      hole.shotCount181plus !== 0
+    )
+  )
+}
 
 export default function SubmitScorePage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("round") // アクティブなタブの状態を管理
+  const [pendingDraft, setPendingDraft] = useState<ScoreDraft | null>(null)
+  const [draftReady, setDraftReady] = useState(false)
 
   const {
     roundData,
@@ -27,7 +75,9 @@ export default function SubmitScorePage() {
     handlePerformanceChange,
     handleSubmit,
     setHolesData, // 追加: ホールデータを設定する関数
-  } = useScoreData()
+    setRoundDataBulk,
+    setPerformanceDataBulk,
+  } = useScoreData({ onSubmitSuccess: clearScoreDraft })
 
   const {
     holes,
@@ -36,8 +86,70 @@ export default function SubmitScorePage() {
     goToNextHole,
     goToPrevHole,
     setCurrentHole,
-    getTotalHoles
+    getTotalHoles,
+    restoreHoleState,
   } = useHoleData({ externalRoundCount: roundData.round_count })
+
+  useEffect(() => {
+    const draft = loadScoreDraft()
+    if (draft) {
+      setPendingDraft(draft)
+    } else {
+      setDraftReady(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!draftReady) return
+
+    const hasEnteredData = hasEnteredScoreData(roundData, holes, currentHole, activeTab)
+
+    if (!hasEnteredData) {
+      clearScoreDraft()
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      saveScoreDraft({
+        roundData,
+        performanceData,
+        holes,
+        currentHole,
+        activeTab,
+      })
+    }, 400)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [activeTab, currentHole, draftReady, holes, performanceData, roundData])
+
+  useEffect(() => {
+    if (!draftReady) return
+
+    const saveBeforePageExit = () => {
+      if (!hasEnteredScoreData(roundData, holes, currentHole, activeTab)) return
+      saveScoreDraft({ roundData, performanceData, holes, currentHole, activeTab })
+    }
+
+    window.addEventListener("pagehide", saveBeforePageExit)
+    return () => window.removeEventListener("pagehide", saveBeforePageExit)
+  }, [activeTab, currentHole, draftReady, holes, performanceData, roundData])
+
+  const restoreDraft = () => {
+    if (!pendingDraft) return
+
+    setRoundDataBulk(pendingDraft.roundData)
+    setPerformanceDataBulk(pendingDraft.performanceData)
+    restoreHoleState(pendingDraft.holes, pendingDraft.currentHole)
+    setActiveTab(pendingDraft.activeTab)
+    setPendingDraft(null)
+    setDraftReady(true)
+  }
+
+  const discardDraft = () => {
+    clearScoreDraft()
+    setPendingDraft(null)
+    setDraftReady(true)
+  }
 
   // holesデータが変更されるたびにuseScoreDataのホールデータを更新する
   useEffect(() => {
@@ -216,6 +328,22 @@ export default function SubmitScorePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <AlertDialog open={pendingDraft !== null}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>入力途中のスコアがあります</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDraft
+                ? `${new Date(pendingDraft.savedAt).toLocaleString("ja-JP")} に保存した入力内容から再開できます。`
+                : "保存した入力内容から再開できます。"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={discardDraft}>破棄して新規入力</AlertDialogCancel>
+            <AlertDialogAction onClick={restoreDraft}>続きから入力</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold mb-2 text-golf-800">スコア入力</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">

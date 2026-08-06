@@ -300,6 +300,14 @@ export function useHoleData({ externalRoundCount, externalHoles }: UseHoleDataPr
     }
   };
 
+  const restoreHoleState = (newHoles: HoleData[], holeNumber: number) => {
+    if (!newHoles.length) return;
+
+    setHoles(newHoles);
+    externalHolesRef.current = newHoles;
+    setCurrentHole(Math.min(Math.max(holeNumber, 1), newHoles.length));
+  };
+
   return {
     roundData,
     holes,
@@ -314,5 +322,6 @@ export function useHoleData({ externalRoundCount, externalHoles }: UseHoleDataPr
     setCurrentHole,
     getTotalHoles,  // 総ホール数を取得する関数を追加
     setExternalHoles, // 外部からホールデータを設定する関数を追加
+    restoreHoleState,
   }
 }
