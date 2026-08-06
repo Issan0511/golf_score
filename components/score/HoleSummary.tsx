@@ -1,5 +1,5 @@
 import React from "react"
-import { Trophy } from "lucide-react"
+import { MessageCircle, Trophy } from "lucide-react"
 import { HoleSummaryProps } from "@/types/score"
 
 export function HoleSummary({ 
@@ -22,9 +22,11 @@ export function HoleSummary({
   // ホール一覧を動的に生成する
   const renderHoleButtons = () => {
     return Array.from({ length: totalHoles }, (_, i) => (
-      <div
+      <button
+        type="button"
         key={i + 1}
-        className={`p-2 rounded-lg cursor-pointer transition-all duration-200 ${
+        aria-label={`${i + 1}番ホール${holes[i]?.memo?.trim() ? "、メモあり" : ""}`}
+        className={`relative min-w-0 rounded-lg p-2 transition-all duration-200 ${
           currentHole === i + 1
             ? "bg-golf-500 text-white font-bold"
             : "bg-white border border-gray-200 hover:bg-golf-50"
@@ -35,7 +37,13 @@ export function HoleSummary({
         <div className={`text-xs mt-1 ${currentHole === i + 1 ? "text-white" : ""}`}>
           {renderParDiff(holes[i])}
         </div>
-      </div>
+        {holes[i]?.memo?.trim() && (
+          <MessageCircle
+            aria-hidden="true"
+            className={`absolute right-0.5 top-0.5 h-3 w-3 ${currentHole === i + 1 ? "text-white" : "text-golf-600"}`}
+          />
+        )}
+      </button>
     ));
   };
 

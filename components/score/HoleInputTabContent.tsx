@@ -8,6 +8,7 @@ import { ApproachShotInput } from "./ApproachShotInput"
 import { HoleSummary } from "./HoleSummary"
 import { NavigationButtons } from "./NavigationButtons"
 import { HoleNavigation } from "./HoleNavigation"
+import { HoleMemoInput } from "./HoleMemoInput"
 
 export function HoleInputTabContent({
   holes,
@@ -186,6 +187,11 @@ export function HoleInputTabContent({
             getSuccessValueForCurrentDistance={getSuccessValueForCurrentDistance}
           />
         </div>
+
+        <HoleMemoInput
+          hole={currentHoleData}
+          handleHoleChange={handleHoleChange}
+        />
 
         <HoleSummary 
           holes={holes} 
