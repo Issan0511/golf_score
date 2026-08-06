@@ -3,7 +3,11 @@ import { useRouter } from "next/navigation"
 import { supabase, updatePlayerStats } from "@/lib/supabase"
 import type { Round, Performance } from "@/lib/supabase"
 
-export function useScoreData() {
+type UseScoreDataOptions = {
+  onSubmitSuccess?: () => void
+}
+
+export function useScoreData({ onSubmitSuccess }: UseScoreDataOptions = {}) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
@@ -45,6 +49,10 @@ export function useScoreData() {
     setRoundData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const setRoundDataBulk = useCallback((data: Partial<Round>) => {
+    setRoundData(data)
+  }, [])
+
   const handlePerformanceChange = (field: keyof Performance, value: any) => {
     setPerformanceData((prev) => ({ ...prev, [field]: value }))
   }
@@ -59,9 +67,9 @@ export function useScoreData() {
   }, []);
 
   // ホールデータを設定するための関数
-  const setHolesData = (holesData: any[]) => {
+  const setHolesData = useCallback((holesData: any[]) => {
     setHoles(holesData)
-  }
+  }, [])
 
   const handleSubmit = async () => {
     // すでに送信中の場合は処理をスキップ（二重送信防止）
@@ -127,6 +135,7 @@ export function useScoreData() {
 
       // toastの代わりにalertを使用
       alert("登録完了: スコアが正常に登録されました");
+      onSubmitSuccess?.()
       
       // プレイヤー詳細ページに遷移する
       router.push(`/player/${roundData.player_id}`)
@@ -144,6 +153,7 @@ export function useScoreData() {
     holes,
     submitting,
     handleRoundChange,
+    setRoundDataBulk,
     handlePerformanceChange,
     setPerformanceDataBulk,
     setHolesData,
