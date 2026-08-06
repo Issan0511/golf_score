@@ -2,29 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { type Round, type Performance } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-
-type HoleData = {
-  number: number
-  par: number
-  score: number
-  putts: number
-  fairwayHit: boolean
-  ob1w: number
-  obOther: number
-  shotCount30: number
-  shotCount80: number
-  shotCount120: number
-  shotCount160: number
-  shotCount180: number
-  shotCount181plus: number
-  shotsuccess30: number
-  shotsuccess80: number
-  shotsuccess120: number
-  shotsuccess160: number
-  shotsuccess180: number
-  shotsuccess181plus: number
-  pinHit: boolean
-}
+import { type HoleData } from "@/types/score"
 
 const defaultHoleData: HoleData = {
   number: 1,
@@ -46,8 +24,15 @@ const defaultHoleData: HoleData = {
   shotsuccess120: 0,
   shotsuccess160: 0,
   shotsuccess180: 0,
-  shotsuccess181plus: 0
+  shotsuccess181plus: 0,
+  memo: ""
 }
+
+const normalizeHoleData = (hole: Partial<HoleData>): HoleData => ({
+  ...defaultHoleData,
+  ...hole,
+  memo: typeof hole.memo === "string" ? hole.memo : "",
+})
 
 type UseHoleDataProps = {
   externalRoundCount?: number; // 外部から渡されるラウンド数
@@ -84,7 +69,8 @@ export function useHoleData({ externalRoundCount, externalHoles }: UseHoleDataPr
 
   // Hole data - 外部から渡されたホールデータがあればそれを使用、なければデフォルトの18ホール
   const [holes, setHoles] = useState<HoleData[]>(
-    externalHoles || Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 }))
+    externalHoles?.map(normalizeHoleData) ||
+      Array.from({ length: 18 }, (_, i) => ({ ...defaultHoleData, number: i + 1 }))
   )
   const [currentHole, setCurrentHole] = useState(1)
 
@@ -94,13 +80,14 @@ export function useHoleData({ externalRoundCount, externalHoles }: UseHoleDataPr
       
       // deepEqualで比較するためにJSON文字列化して比較（循環参照などがなければ有効）
       const currentExternalJson = JSON.stringify(externalHolesRef.current || []);
-      const newExternalJson = JSON.stringify(externalHoles);
+      const normalizedExternalHoles = externalHoles.map(normalizeHoleData);
+      const newExternalJson = JSON.stringify(normalizedExternalHoles);
       
       if (currentExternalJson !== newExternalJson) {
         // 参照の更新を先に行う
-        externalHolesRef.current = externalHoles;
+        externalHolesRef.current = normalizedExternalHoles;
         // stateの更新
-        setHoles(externalHoles);
+        setHoles(normalizedExternalHoles);
       }
     }
   }, [externalHoles]);
@@ -295,16 +282,18 @@ export function useHoleData({ externalRoundCount, externalHoles }: UseHoleDataPr
   // 外部からホールデータを設定するための関数
   const setExternalHoles = (newHoles: HoleData[]) => {
     if (newHoles && newHoles.length > 0) {
-      setHoles(newHoles);
-      externalHolesRef.current = newHoles;
+      const normalizedHoles = newHoles.map(normalizeHoleData);
+      setHoles(normalizedHoles);
+      externalHolesRef.current = normalizedHoles;
     }
   };
 
   const restoreHoleState = (newHoles: HoleData[], holeNumber: number) => {
     if (!newHoles.length) return;
 
-    setHoles(newHoles);
-    externalHolesRef.current = newHoles;
+    const normalizedHoles = newHoles.map(normalizeHoleData);
+    setHoles(normalizedHoles);
+    externalHolesRef.current = normalizedHoles;
     setCurrentHole(Math.min(Math.max(holeNumber, 1), newHoles.length));
   };
 

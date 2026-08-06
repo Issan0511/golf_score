@@ -55,7 +55,8 @@ function hasEnteredScoreData(
       hole.shotCount120 !== 0 ||
       hole.shotCount160 !== 0 ||
       hole.shotCount180 !== 0 ||
-      hole.shotCount181plus !== 0
+      hole.shotCount181plus !== 0 ||
+      hole.memo.trim() !== ""
     )
   )
 }
