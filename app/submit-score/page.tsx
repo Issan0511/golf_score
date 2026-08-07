@@ -92,12 +92,24 @@ export default function SubmitScorePage() {
   } = useHoleData({ externalRoundCount: roundData.round_count })
 
   useEffect(() => {
-    const draft = loadScoreDraft()
-    if (draft) {
-      setPendingDraft(draft)
-    } else {
+    const checkForSavedDraft = () => {
+      const draft = loadScoreDraft()
+      if (draft) {
+        // A browser may restore this page from its back/forward cache without
+        // remounting the component. Pause autosaving before showing the saved
+        // draft so the reset in-memory state cannot overwrite it.
+        setDraftReady(false)
+        setPendingDraft(draft)
+        return
+      }
+
       setDraftReady(true)
     }
+
+    checkForSavedDraft()
+    window.addEventListener("pageshow", checkForSavedDraft)
+
+    return () => window.removeEventListener("pageshow", checkForSavedDraft)
   }, [])
 
   useEffect(() => {
@@ -131,8 +143,19 @@ export default function SubmitScorePage() {
       saveScoreDraft({ roundData, performanceData, holes, currentHole, activeTab })
     }
 
+    const saveWhenHidden = () => {
+      if (document.visibilityState === "hidden") saveBeforePageExit()
+    }
+
+    // Mobile browsers can be terminated after moving to the background
+    // without firing pagehide/unload. visibilitychange is the last reliable
+    // opportunity to persist the current input in that case.
     window.addEventListener("pagehide", saveBeforePageExit)
-    return () => window.removeEventListener("pagehide", saveBeforePageExit)
+    document.addEventListener("visibilitychange", saveWhenHidden)
+    return () => {
+      window.removeEventListener("pagehide", saveBeforePageExit)
+      document.removeEventListener("visibilitychange", saveWhenHidden)
+    }
   }, [activeTab, currentHole, draftReady, holes, performanceData, roundData])
 
   const restoreDraft = () => {
