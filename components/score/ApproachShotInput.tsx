@@ -64,7 +64,7 @@ export function ApproachShotInput({
           </div>
         </FormField>
 
-        <FormField label="31~80m">
+        <FormField label="31~100m">
           <div className="flex items-center justify-start gap-2">
             <Button 
               variant="outline" 
@@ -93,7 +93,7 @@ export function ApproachShotInput({
           </div>
         </FormField>
 
-        <FormField label="81~120m">
+        <FormField label="101~120m">
           <div className="flex items-center justify-start gap-2">
             <Button 
               variant="outline" 

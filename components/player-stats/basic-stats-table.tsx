@@ -41,6 +41,15 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                 平均パット {sortField === "avg_putt" && (sortDirection === "asc" ? "↑" : "↓")}
               </div>
             </TableHead>
+            <TableHead
+              className="cursor-pointer font-semibold text-gray-700 hover:text-golf-600 text-right"
+              onClick={() => onSort("avg_short_game")}
+            >
+              <div className="flex items-center justify-end">
+                <Flag className="h-4 w-4 mr-1 text-green-500" />
+                平均SG {sortField === "avg_short_game" && (sortDirection === "asc" ? "↑" : "↓")}
+              </div>
+            </TableHead>
             
             {/* Performance Table から統合 - 1パット */}
             <TableHead
@@ -130,6 +139,15 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                 {player.stats?.avg_putt !== undefined && player.stats?.avg_putt !== null ? (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     {player.stats.avg_putt.toFixed(1)}
+                  </Badge>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+              <TableCell className="text-right font-medium">
+                {player.stats?.avg_short_game != null ? (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    {player.stats.avg_short_game.toFixed(1)}
                   </Badge>
                 ) : (
                   "-"

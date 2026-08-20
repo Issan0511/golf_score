@@ -163,7 +163,7 @@ export function PerformanceTabContent({
           />
 
           <DistanceInputGroup
-            title="31-80m"
+            title="31-100m"
             successValue={getInputValue(performanceData.dist_31_80_success)}
             totalValue={getInputValue(performanceData.dist_31_80_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_31_80_success", value)}
@@ -171,7 +171,7 @@ export function PerformanceTabContent({
           />
 
           <DistanceInputGroup
-            title="81-120m"
+            title="101-120m"
             successValue={getInputValue(performanceData.dist_81_120_success)}
             totalValue={getInputValue(performanceData.dist_81_120_total)}
             onSuccessChange={(value) => handlePerformanceChange("dist_81_120_success", value)}

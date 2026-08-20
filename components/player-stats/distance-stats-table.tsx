@@ -50,7 +50,7 @@ export function DistanceStatsTable({ players, sortField, sortDirection, onSort }
             >
               <div className="flex items-center justify-end">
                 <Trophy className="h-4 w-4 mr-1 text-amber-500" />
-                31-80m {sortField === "dist_31_80" && (sortDirection === "asc" ? "↑" : "↓")}
+                31-100m {sortField === "dist_31_80" && (sortDirection === "asc" ? "↑" : "↓")}
               </div>
             </TableHead>
             <TableHead 
@@ -59,7 +59,7 @@ export function DistanceStatsTable({ players, sortField, sortDirection, onSort }
             >
               <div className="flex items-center justify-end">
                 <Trophy className="h-4 w-4 mr-1 text-amber-500" />
-                81-120m {sortField === "dist_81_120" && (sortDirection === "asc" ? "↑" : "↓")}
+                101-120m {sortField === "dist_81_120" && (sortDirection === "asc" ? "↑" : "↓")}
               </div>
             </TableHead>
             <TableHead 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import {
@@ -30,11 +30,14 @@ import {
   GuitarIcon as Golf,
   Share2,
   MessageCircle,
+  ListChecks,
 } from "lucide-react";
 import { useLoadingNavigation } from "@/hooks/use-loading-navigation";
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ScoreReportModal } from "@/components/score/ScoreReportModal";
 import { getHoleMemos, HoleMemoListDialog } from "@/components/score/HoleMemoListDialog";
+import { calculateAverageShortGame } from "@/lib/short-game";
+import { RoundDetailsDialog } from "@/components/player/round-details-dialog";
 
 async function getPlayer(id: string) {
   const { data, error } = await supabase
@@ -91,6 +94,7 @@ export default function PlayerPage() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const { isNavigating, navigate } = useLoadingNavigation();
+  const averageShortGame = useMemo(() => calculateAverageShortGame(rounds), [rounds]);
 
   // データの取得
   useEffect(() => {
@@ -311,6 +315,12 @@ export default function PlayerPage() {
                       icon={<Golf className="h-5 w-5 text-blue-500" />}
                     />
                     <StatCard
+                      title="平均SG"
+                      value={averageShortGame}
+                      decimals={1}
+                      icon={<Flag className="h-5 w-5 text-green-500" />}
+                    />
+                    <StatCard
                       title="ピン率"
                       value={stats.pin_rate}
                       decimals={1}
@@ -340,11 +350,11 @@ export default function PlayerPage() {
                           value={stats.dist_1_30}
                         />
                         <DistanceStatCard
-                          title="31-80m"
+                          title="31-100m"
                           value={stats.dist_31_80}
                         />
                         <DistanceStatCard
-                          title="81-120m"
+                          title="101-120m"
                           value={stats.dist_81_120}
                         />
                         <DistanceStatCard
@@ -473,6 +483,7 @@ function RoundCard({ round }: { round: Round }) {
   
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isMemoDialogOpen, setIsMemoDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const memoCount = getHoleMemos(round).length;
 
   const handleReportClick = (e: React.MouseEvent) => {
@@ -510,6 +521,18 @@ function RoundCard({ round }: { round: Round }) {
                     : ""}
                 </div>
                 <div className="flex flex-wrap justify-end gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs border-golf-500 text-golf-600 hover:bg-golf-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDetailsDialogOpen(true);
+                    }}
+                  >
+                    <ListChecks className="h-3 w-3 mr-1" />
+                    詳細
+                  </Button>
                   {memoCount > 0 && (
                     <Button
                       variant="outline"
@@ -578,6 +601,11 @@ function RoundCard({ round }: { round: Round }) {
       <ScoreReportModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
+        round={round}
+      />
+      <RoundDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
         round={round}
       />
       <HoleMemoListDialog
