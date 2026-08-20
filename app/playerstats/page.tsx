@@ -8,6 +8,7 @@ import { PlayerWithStats } from "@/types/player-stats"
 import { BasicStatsTable } from "@/components/player-stats/basic-stats-table"
 import { DistanceStatsTable } from "@/components/player-stats/distance-stats-table"
 import { StatsFilter } from "@/components/player-stats/stats-filter"
+import { calculateAverageShortGame } from "@/lib/short-game"
 
 export default function PlayerStatsPage() {
   const [players, setPlayers] = useState<PlayerWithStats[]>([])
@@ -25,6 +26,12 @@ export default function PlayerStatsPage() {
         const { data: playersData, error: playersError } = await supabase.from("players").select("*").order("name")
 
         if (playersError) throw playersError
+
+        const { data: roundsData, error: roundsError } = await supabase
+          .from("rounds")
+          .select("player_id, holes, round_count")
+
+        if (roundsError) throw roundsError
 
         const playersWithStats: PlayerWithStats[] = []
 
@@ -46,7 +53,14 @@ export default function PlayerStatsPage() {
 
           playersWithStats.push({
             ...player,
-            stats: statsError ? null : statsData,
+            stats: statsError
+              ? null
+              : {
+                  ...statsData,
+                  avg_short_game: calculateAverageShortGame(
+                    roundsData.filter((round) => round.player_id === player.id),
+                  ),
+                },
             performance: perfError ? null : perfData
           })
         }
@@ -164,4 +178,3 @@ export default function PlayerStatsPage() {
     </div>
   )
 }
-

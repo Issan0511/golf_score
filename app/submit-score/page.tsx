@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { supabase, type Player } from "@/lib/supabase"
+import { isGreenInRegulation } from "@/lib/short-game"
 import { Calendar, Cloud, Flag, GuitarIcon as Golf, Trophy, User } from "lucide-react"
 
 // コンポーネントとフックをインポート
@@ -232,7 +233,7 @@ export default function SubmitScorePage() {
       }
 
       // グリーンヒット
-      if (hole.score <= hole.par) {
+      if (isGreenInRegulation(hole)) {
         performance.par_on += 1
       }
       if (hole.score === hole.par + 1) {

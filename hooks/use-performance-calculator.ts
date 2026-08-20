@@ -1,6 +1,7 @@
 import { type HoleData } from "@/types/score"
 import { type Performance } from "@/lib/supabase"
 import { useRef, useCallback } from "react"
+import { isGreenInRegulation } from "@/lib/short-game"
 
 type PerformanceCalculatorProps = {
   holes: HoleData[]
@@ -78,7 +79,7 @@ export function usePerformanceCalculator({ holes, handleRoundChange }: Performan
       }
 
       // グリーンヒット
-      if (hole.score <= hole.par) {
+      if (isGreenInRegulation(hole)) {
         performance.par_on! += 1
       }
       if (hole.score === hole.par + 1) {
