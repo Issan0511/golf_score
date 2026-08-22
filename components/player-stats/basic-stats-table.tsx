@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpDown, Trophy, GuitarIcon as Golf, Flag, Cloud } from "lucide-react"
+import { Trophy, GuitarIcon as Golf, Flag, Cloud } from "lucide-react"
 import { PlayerWithStats } from "@/types/player-stats"
 
 interface BasicStatsTableProps {
@@ -208,7 +208,7 @@ export function BasicStatsTable({ players, sortField, sortDirection, onSort }: B
                 )}
               </TableCell>
               <TableCell className="text-right font-medium">
-                {player.stats?.avg_ob1w !== undefined && player.stats?.avg_ob1w !== null ? (
+                {player.stats?.avg_ob1w != null ? (
                   <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
                     {player.stats.avg_ob1w.toFixed(2)}
                   </Badge>

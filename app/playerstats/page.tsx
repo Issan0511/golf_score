@@ -1,14 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowUpDown, Trophy } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { PlayerWithStats } from "@/types/player-stats"
 import { BasicStatsTable } from "@/components/player-stats/basic-stats-table"
 import { DistanceStatsTable } from "@/components/player-stats/distance-stats-table"
 import { StatsFilter } from "@/components/player-stats/stats-filter"
-import { calculateAverageShortGame } from "@/lib/short-game"
+import { calculatePlayerStats } from "@/lib/player-stats-calculator"
+import type { Player, Round } from "@/lib/supabase"
+
+const PLAYER_STATS_DATE_RANGE_KEY = "golf-score:playerstats-date-range"
+
+function isIsoDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+
+  const date = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+}
 
 export default function PlayerStatsPage() {
   const [players, setPlayers] = useState<PlayerWithStats[]>([])
@@ -17,6 +27,44 @@ export default function PlayerStatsPage() {
   const [sortField, setSortField] = useState("name")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [showAllStats, setShowAllStats] = useState(false)
+  const [showOldBoys, setShowOldBoys] = useState(false)
+  const [rounds, setRounds] = useState<Round[]>([])
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
+  const [dateRangeRestored, setDateRangeRestored] = useState(false)
+
+  useEffect(() => {
+    try {
+      const savedDateRange = window.localStorage.getItem(PLAYER_STATS_DATE_RANGE_KEY)
+      if (savedDateRange) {
+        const parsedDateRange: unknown = JSON.parse(savedDateRange)
+        if (parsedDateRange && typeof parsedDateRange === "object") {
+          const { startDate: savedStartDate, endDate: savedEndDate } = parsedDateRange as Record<string, unknown>
+          setStartDate(isIsoDate(savedStartDate) ? savedStartDate : "")
+          setEndDate(isIsoDate(savedEndDate) ? savedEndDate : "")
+        }
+      }
+    } catch (error) {
+      console.warn("保存された統計期間を読み込めませんでした:", error)
+    } finally {
+      setDateRangeRestored(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!dateRangeRestored) return
+
+    try {
+      if (!startDate && !endDate) {
+        window.localStorage.removeItem(PLAYER_STATS_DATE_RANGE_KEY)
+        return
+      }
+
+      window.localStorage.setItem(PLAYER_STATS_DATE_RANGE_KEY, JSON.stringify({ startDate, endDate }))
+    } catch (error) {
+      console.warn("統計期間を保存できませんでした:", error)
+    }
+  }, [dateRangeRestored, startDate, endDate])
 
   useEffect(() => {
     async function fetchPlayersWithStats() {
@@ -29,43 +77,12 @@ export default function PlayerStatsPage() {
 
         const { data: roundsData, error: roundsError } = await supabase
           .from("rounds")
-          .select("player_id, holes, round_count")
+          .select("*")
 
         if (roundsError) throw roundsError
 
-        const playersWithStats: PlayerWithStats[] = []
-
-        // Fetch stats for each player
-        for (const player of playersData) {
-          // Get player stats
-          const { data: statsData, error: statsError } = await supabase
-            .from("playerstats")
-            .select("*")
-            .eq("id", player.id)
-            .single()
-
-          // Get performance data
-          const { data: perfData, error: perfError } = await supabase
-            .from("performance")
-            .select("*")
-            .eq("id", player.id)
-            .single()
-
-          playersWithStats.push({
-            ...player,
-            stats: statsError
-              ? null
-              : {
-                  ...statsData,
-                  avg_short_game: calculateAverageShortGame(
-                    roundsData.filter((round) => round.player_id === player.id),
-                  ),
-                },
-            performance: perfError ? null : perfData
-          })
-        }
-
-        setPlayers(playersWithStats)
+        setRounds(roundsData as Round[])
+        setPlayers((playersData as Player[]).map((player) => ({ ...player, stats: null, performance: null })))
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
@@ -76,12 +93,27 @@ export default function PlayerStatsPage() {
     fetchPlayersWithStats()
   }, [])
 
+  const playersForPeriod = useMemo(() => players.map((player) => {
+    const playerRounds = rounds.filter((round) =>
+      round.player_id === player.id &&
+      (!startDate || (round.date != null && round.date >= startDate)) &&
+      (!endDate || (round.date != null && round.date <= endDate)),
+    )
+    return { ...player, stats: calculatePlayerStats(playerRounds) }
+  }), [players, rounds, startDate, endDate])
+
   // Filter players based on search term
-  const filteredPlayers = players.filter(
-    (player) =>
-      player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (player.department && player.department.toLowerCase().includes(searchTerm.toLowerCase())),
-  )
+  const currentAcademicYear = new Date().getMonth() >= 3 ? new Date().getFullYear() : new Date().getFullYear() - 1
+  const oldestCurrentStudentAdmissionYear = currentAcademicYear - 3
+
+  const normalizedSearchTerm = searchTerm.toLowerCase()
+  const filteredPlayers = playersForPeriod.filter((player) => {
+    const isOldBoy = player.admission_year != null && player.admission_year < oldestCurrentStudentAdmissionYear
+    const matchesSearch = player.name.toLowerCase().includes(normalizedSearchTerm) ||
+      Boolean(player.department?.toLowerCase().includes(normalizedSearchTerm))
+
+    return (showOldBoys || !isOldBoy) && matchesSearch
+  })
 
   // Sort players based on selected field and direction
   const sortedPlayers = [...filteredPlayers].sort((a, b) => {
@@ -139,6 +171,12 @@ export default function PlayerStatsPage() {
             setSortDirection={setSortDirection}
             showAllStats={showAllStats}
             setShowAllStats={setShowAllStats}
+            showOldBoys={showOldBoys}
+            setShowOldBoys={setShowOldBoys}
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
           />
         </CardContent>
       </Card>
@@ -154,6 +192,11 @@ export default function PlayerStatsPage() {
             <CardTitle className="text-golf-800 flex items-center">
               <ArrowUpDown className="h-5 w-5 mr-2 text-golf-500" />
               {showAllStats ? "距離帯別成功率" : "統計一覧"}
+              {(startDate || endDate) && (
+                <span className="ml-3 text-sm font-normal text-gray-500">
+                  {startDate || "最初"} 〜 {endDate || "現在"}
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
