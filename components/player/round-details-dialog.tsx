@@ -36,7 +36,13 @@ export function RoundDetailsDialog({ open, onOpenChange, round }: RoundDetailsDi
             {detailItems.map((item) => (
               <div key={item.key} className="border-b border-r border-gray-200 bg-white p-3 text-center last:border-r-0">
                 <div className="min-h-10 text-sm font-medium text-gray-600">{item.label}</div>
-                <div className="mt-2 text-2xl font-bold text-golf-800">{details[item.key]}</div>
+                <div className="mt-2 text-2xl font-bold text-golf-800">
+                  {item.key === "shortGame"
+                    ? details.shortGame === null
+                      ? "—"
+                      : details.shortGame.toFixed(1)
+                    : details[item.key]}
+                </div>
               </div>
             ))}
           </div>
@@ -45,7 +51,9 @@ export function RoundDetailsDialog({ open, onOpenChange, round }: RoundDetailsDi
             このラウンドには詳細なホール情報がありません。
           </div>
         )}
-        <p className="text-xs text-gray-500">SGはパーオンを除く100m以内のショットとパットの合計です。</p>
+        <p className="text-xs text-gray-500">
+          SGはパーオンしていない1ホールあたりの、100m以内のショットとパットの平均打数です。
+        </p>
       </DialogContent>
     </Dialog>
   )
