@@ -176,11 +176,11 @@ export const RoundBasicInfoCard: React.FC<RoundBasicInfoCardProps> = ({
               </FormField>
               <FormField label="course_rate" icon={<Flag className="h-4 w-4 text-golf-500" />}>
                 <Input
-                  id=""course_rate""
+                  id="course_rate"
                   type="number"
                   step="0.1"
-                  value={roundData."course_rate" || ""}
-                  onChange={(e) => handleRoundChange(""course_rate"", Number.parseFloat(e.target.value))}
+                  value={roundData.course_rate || ""}
+                  onChange={(e) => handleRoundChange("course_rate", Number.parseFloat(e.target.value))}
                   placeholder="例: 72.5"
                   className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
                 />
