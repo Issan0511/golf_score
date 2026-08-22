@@ -6,6 +6,11 @@ type RoundForShortGame = {
   round_count: number | null
 }
 
+export type ShortGameTotals = {
+  shortGameShots: number
+  missedGreenHoles: number
+}
+
 function isHoleData(value: Json): value is Json & HoleData {
   if (!value || Array.isArray(value) || typeof value !== "object") return false
 
@@ -19,27 +24,41 @@ export function isGreenInRegulation(hole: Pick<HoleData, "par" | "score" | "putt
   return hole.score - hole.putts <= hole.par - 2
 }
 
-/** Counts shots from 100m and in, including putts, on holes where GIR was missed. */
-export function calculateRoundShortGame(holes: Json[] | null): number | null {
+/** Totals shots and holes used to calculate short game performance. */
+export function calculateShortGameTotals(holes: Json[] | null): ShortGameTotals | null {
   if (!holes || holes.length === 0 || !holes.every(isHoleData)) return null
 
-  return holes.reduce((total, hole) => {
-    if (isGreenInRegulation(hole)) return total
-    return total + (hole.shotCount30 ?? 0) + (hole.shotCount80 ?? 0) + hole.putts
-  }, 0)
+  return holes.reduce<ShortGameTotals>(
+    (totals, hole) => {
+      if (isGreenInRegulation(hole)) return totals
+
+      totals.shortGameShots += (hole.shotCount30 ?? 0) + (hole.shotCount80 ?? 0) + hole.putts
+      totals.missedGreenHoles += 1
+      return totals
+    },
+    { shortGameShots: 0, missedGreenHoles: 0 },
+  )
 }
 
-/** Calculates the per-round average, including multi-round score entries. */
+/** Calculates average short game shots per missed-GIR hole for a round. */
+export function calculateRoundShortGame(holes: Json[] | null): number | null {
+  const totals = calculateShortGameTotals(holes)
+  if (!totals || totals.missedGreenHoles === 0) return null
+
+  return totals.shortGameShots / totals.missedGreenHoles
+}
+
+/** Calculates the missed-GIR-hole-weighted average across rounds. */
 export function calculateAverageShortGame(rounds: RoundForShortGame[]): number | null {
   let totalShots = 0
-  let totalRounds = 0
+  let totalMissedGreenHoles = 0
 
   rounds.forEach((round) => {
-    const shortGame = calculateRoundShortGame(round.holes)
-    if (shortGame === null) return
-    totalShots += shortGame
-    totalRounds += round.round_count && round.round_count > 0 ? round.round_count : 1
+    const totals = calculateShortGameTotals(round.holes)
+    if (!totals) return
+    totalShots += totals.shortGameShots
+    totalMissedGreenHoles += totals.missedGreenHoles
   })
 
-  return totalRounds > 0 ? totalShots / totalRounds : null
+  return totalMissedGreenHoles > 0 ? totalShots / totalMissedGreenHoles : null
 }

@@ -10,7 +10,7 @@ export type RoundDetailMetrics = {
   ob: number
   parOns: number
   bogeyOns: number
-  shortGame: number
+  shortGame: number | null
 }
 
 function isDetailHole(value: Json): value is Json & HoleData & { ob2nd?: number } {
@@ -37,6 +37,6 @@ export function calculateRoundDetails(round: Pick<Round, "holes" | "putts">): Ro
   )
 
   metrics.putts = round.putts ?? metrics.putts
-  metrics.shortGame = calculateRoundShortGame(round.holes) ?? 0
+  metrics.shortGame = calculateRoundShortGame(round.holes)
   return metrics
 }
