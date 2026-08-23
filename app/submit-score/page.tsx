@@ -30,6 +30,7 @@ import {
   saveScoreDraft,
   type ScoreDraft,
 } from "@/hooks/use-score-draft"
+import { loadRoundPreferences, saveRoundPreferences } from "@/hooks/use-round-preferences"
 
 function hasEnteredScoreData(
   roundData: ReturnType<typeof useScoreData>["roundData"],
@@ -68,6 +69,7 @@ export default function SubmitScorePage() {
   const [activeTab, setActiveTab] = useState("round") // アクティブなタブの状態を管理
   const [pendingDraft, setPendingDraft] = useState<ScoreDraft | null>(null)
   const [draftReady, setDraftReady] = useState(false)
+  const [preferencesReady, setPreferencesReady] = useState(false)
 
   const {
     roundData,
@@ -104,6 +106,10 @@ export default function SubmitScorePage() {
         return
       }
 
+      const preferences = loadRoundPreferences()
+      if (preferences.player_id) handleRoundChange("player_id", preferences.player_id)
+      if (preferences.club_name) handleRoundChange("club_name", preferences.club_name)
+      setPreferencesReady(true)
       setDraftReady(true)
     }
 
@@ -112,6 +118,15 @@ export default function SubmitScorePage() {
 
     return () => window.removeEventListener("pageshow", checkForSavedDraft)
   }, [])
+
+  useEffect(() => {
+    if (!preferencesReady) return
+
+    saveRoundPreferences({
+      player_id: roundData.player_id,
+      club_name: roundData.club_name,
+    })
+  }, [preferencesReady, roundData.club_name, roundData.player_id])
 
   useEffect(() => {
     if (!draftReady) return
@@ -167,12 +182,17 @@ export default function SubmitScorePage() {
     restoreHoleState(pendingDraft.holes, pendingDraft.currentHole)
     setActiveTab(pendingDraft.activeTab)
     setPendingDraft(null)
+    setPreferencesReady(true)
     setDraftReady(true)
   }
 
   const discardDraft = () => {
     clearScoreDraft()
+    const preferences = loadRoundPreferences()
+    if (preferences.player_id) handleRoundChange("player_id", preferences.player_id)
+    if (preferences.club_name) handleRoundChange("club_name", preferences.club_name)
     setPendingDraft(null)
+    setPreferencesReady(true)
     setDraftReady(true)
   }
 

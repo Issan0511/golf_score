@@ -147,7 +147,25 @@ export function RoundInfoTabContent({
               onChange={(e) => handleRoundChange("date", e.target.value)}
               className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
             />
-          </FormField>          <FormField label="クラブ名" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+          </FormField>
+
+          <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
+            <Select
+              value={roundData.round_count?.toString() || "1"}
+              onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
+            >
+              <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                <SelectValue placeholder="ラウンド数を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
+                <SelectItem value="1">1.0（1ラウンド）</SelectItem>
+                <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+
+          <FormField label="クラブ名" icon={<Golf className="h-4 w-4 text-golf-500" />}>
             {courseRatesError ? (
               <Input
                 value={selectedClub}
@@ -210,35 +228,40 @@ export function RoundInfoTabContent({
                 コースデータの読み込みに失敗しました。手動で入力してください。
               </p>
             )}
-          </FormField>          <FormField label="コース名（オプション）" icon={<Flag className="h-4 w-4 text-golf-500" />}>
-            {courseRatesError ? (
-              <Input
-                value={selectedCourse}
-                onChange={(e) => {
-                  setSelectedCourse(e.target.value);
-                  handleRoundChange("course_name", e.target.value);
-                }}
-                placeholder="コース名を手動で入力"
-                className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
-              />
-            ) : (              <Select 
-                value={selectedCourse} 
-                onValueChange={handleCourseChange}
-                disabled={!selectedClub}
-              >
-                <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-                  <SelectValue placeholder={!selectedClub ? "先にクラブを選択" : courseOptions.length === 0 ? `コース情報なし (${selectedClub})` : "コースを選択"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {courseOptions.map((course) => (
-                    <SelectItem key={course.value} value={course.value}>
-                      {course.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
           </FormField>
+
+          {(roundData.round_count ?? 1) === 1 && (
+            <FormField label="コース名（オプション）" icon={<Flag className="h-4 w-4 text-golf-500" />}>
+              {courseRatesError ? (
+                <Input
+                  value={selectedCourse}
+                  onChange={(e) => {
+                    setSelectedCourse(e.target.value);
+                    handleRoundChange("course_name", e.target.value);
+                  }}
+                  placeholder="コース名を手動で入力"
+                  className="border-gray-200 focus:border-golf-500 focus:ring-golf-500"
+                />
+              ) : (
+                <Select
+                  value={selectedCourse}
+                  onValueChange={handleCourseChange}
+                  disabled={!selectedClub}
+                >
+                  <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
+                    <SelectValue placeholder={!selectedClub ? "先にクラブを選択" : courseOptions.length === 0 ? `コース情報なし (${selectedClub})` : "コースを選択"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courseOptions.map((course) => (
+                      <SelectItem key={course.value} value={course.value}>
+                        {course.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </FormField>
+          )}
 
           <FormField label="使用ティー" icon={<Flag className="h-4 w-4 text-golf-500" />}>
             {courseRatesError ? (
@@ -281,22 +304,6 @@ export function RoundInfoTabContent({
               </SelectContent>
             </Select>
           </FormField>
-
-          <FormField label="ラウンド数" icon={<Golf className="h-4 w-4 text-golf-500" />}>
-            <Select
-              value={roundData.round_count?.toString() || "1"}
-              onValueChange={(value) => handleRoundChange("round_count", Number.parseFloat(value))}
-            >
-              <SelectTrigger className="border-gray-200 focus:border-golf-500 focus:ring-golf-500">
-                <SelectValue placeholder="ラウンド数を選択" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0.5">0.5（ハーフ）</SelectItem>
-                <SelectItem value="1">1.0（1ラウンド）</SelectItem>
-                <SelectItem value="1.5">1.5（1.5ラウンド）</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField> 
 
         </div>
         <div className="space-y-2 pt-4">
