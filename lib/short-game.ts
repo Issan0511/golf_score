@@ -24,7 +24,7 @@ export function isGreenInRegulation(hole: Pick<HoleData, "par" | "score" | "putt
   return hole.score - hole.putts <= hole.par - 2
 }
 
-/** Totals shots and holes used to calculate short game performance. */
+/** Totals shots and eligible missed-GIR holes used to calculate short game performance. */
 export function calculateShortGameTotals(holes: Json[] | null): ShortGameTotals | null {
   if (!holes || holes.length === 0 || !holes.every(isHoleData)) return null
 
@@ -32,7 +32,10 @@ export function calculateShortGameTotals(holes: Json[] | null): ShortGameTotals 
     (totals, hole) => {
       if (isGreenInRegulation(hole)) return totals
 
-      totals.shortGameShots += (hole.shotCount30 ?? 0) + (hole.shotCount80 ?? 0) + hole.putts
+      const approachShots = (hole.shotCount30 ?? 0) + (hole.shotCount80 ?? 0)
+      if (approachShots === 0) return totals
+
+      totals.shortGameShots += approachShots + hole.putts
       totals.missedGreenHoles += 1
       return totals
     },
