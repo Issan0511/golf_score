@@ -88,10 +88,6 @@ export function useScoreData({ onSubmitSuccess }: UseScoreDataOptions = {}) {
       missingFields.push("日付");
     }
     
-    if (!roundData.course_name) {
-      missingFields.push("コース名");
-    }
-
     if (missingFields.length > 0) {
       // toastの代わりにalertを使用
       alert(`入力エラー: 以下の項目を入力してください: ${missingFields.join(", ")}`);
